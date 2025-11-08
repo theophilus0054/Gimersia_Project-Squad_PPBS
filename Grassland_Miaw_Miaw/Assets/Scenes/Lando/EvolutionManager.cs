@@ -25,6 +25,7 @@ public class EvolutionData
     public float hp;
     public float atk;
     public float atkSpeed;
+    public float projectileSpeed;
     public int tileRange;
     public Effect[] effects;
 
@@ -39,6 +40,7 @@ public class EvolutionData
         float hp,
         float atk,
         float atkSpeed,
+        float projectileSpeed,
         int tileRange,
         Effect[] effects,
         GameObject prefab)
@@ -51,6 +53,7 @@ public class EvolutionData
         this.hp = hp;
         this.atk = atk;
         this.atkSpeed = atkSpeed;
+        this.projectileSpeed = projectileSpeed;
         this.tileRange = tileRange;
         this.effects = effects;
         this.prefab = prefab;
@@ -60,7 +63,7 @@ public class EvolutionData
     {
         string evoList = possibleEvolutions.Length > 0 ? string.Join(", ", possibleEvolutions) : "None";
         string effectList = effects.Length > 0 ? string.Join(", ", effects) : "None";
-        return $"[{index}] {name} (Tier {tier}) | Cost:{baseCost} | HP:{hp} ATK:{atk} SPD:{atkSpeed} Range:{tileRange} | Effects: {effectList} | Next: {evoList}";
+        return $"[{index}] {name} (Tier {tier}) | Cost:{baseCost} | HP:{hp} ATK:{atk} SPD:{atkSpeed} ProjSPD : {projectileSpeed} Range:{tileRange} | Effects: {effectList} | Next: {evoList}";
     }
 }
 
@@ -87,6 +90,26 @@ public class EvolutionManager : MonoBehaviour
     void Start()
     {
 
+    }
+    
+    public EvolutionData GetEvolution(int index)
+    {
+        if (index < 0 || index >= evolutions.Count)
+        {
+            Debug.LogWarning($"Index {index} out of range for evolutions list!");
+            return null;
+        }
+        return evolutions[index];
+    }
+
+    public void SetEvolution(int index, EvolutionData newData)
+    {
+        if (index < 0 || index >= evolutions.Count)
+        {
+            Debug.LogWarning($"Index {index} out of range for evolutions list!");
+            return;
+        }
+        evolutions[index] = newData;
     }
 
     public void SpawnEvolution(int evolutionIndex)

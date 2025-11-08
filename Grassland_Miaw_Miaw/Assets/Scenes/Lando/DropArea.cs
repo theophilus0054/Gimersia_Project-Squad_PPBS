@@ -6,26 +6,44 @@ public class DropArea : MonoBehaviour, IDragDrop
     [SerializeField] public int y;
     [SerializeField] bool filled = false;
 
-    public int GetX()
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
+    private Color filledColor = new Color(0.5f, 0.5f, 0.5f, 0f);
+
+    void Awake()
     {
-        return x;
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogError($"{name}: SpriteRenderer not found!");
+        }
+        else
+        {
+            originalColor = spriteRenderer.color;
+        }
     }
-    public int GetY()
-    {
-        return y;
-    }
-    public bool getFilled()
-    {
-        return filled;
-    }
+
+    public int GetX() => x;
+    public int GetY() => y;
+    public bool getFilled() => filled;
+
     public void OnItemDrop(DragScript drop)
     {
         drop.transform.position = transform.position;
         filled = true;
+        UpdateColor();
     }
 
     public void OnItemLeave(DragScript drop)
     {
         filled = false;
+        UpdateColor();
+    }
+
+    private void UpdateColor()
+    {
+        if (spriteRenderer == null) return;
+
+        spriteRenderer.color = filled ? filledColor : originalColor;
     }
 }
