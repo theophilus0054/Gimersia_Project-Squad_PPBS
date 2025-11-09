@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 32a02516ee368d74bba6fdc4ba2cea07
+guid: d39c67cb3f2edd64bba473104390cf42
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4429871370375950830
-    second: Evo4_0
+      213: -5153314912136814790
+    second: corals_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Evo4_0
+      name: corals_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 121
-        height: 121
+        x: 14
+        y: 18
+        width: 105
+        height: 107
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 21e8118857fe582c0800000000000000
-      internalID: -4429871370375950830
+      spriteID: a3f9c5e046fbb78b0800000000000000
+      internalID: -5153314912136814790
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Evo4_0: -4429871370375950830
+      corals_0: -5153314912136814790
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
