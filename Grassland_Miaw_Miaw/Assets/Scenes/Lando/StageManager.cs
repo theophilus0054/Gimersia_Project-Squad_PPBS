@@ -6,11 +6,23 @@ using System.Linq;
 [System.Serializable]
 public class StageSummon
 {
+    [Header("Stage Info")]
     public string stageName;
+    public int stageTargetProgress = 100;
+
+    [Header("Enemies")]
     public int[] enemyIndices;
     [Range(0f, 100f)]
     public float[] spawnChances;
-    public int stageTargetProgress = 100;
+
+    [Header("Stage Multipliers")]
+    public float hpMultiplier = 1f;
+    public float atkMultiplier = 1f;
+    public float coinsMultiplier = 1f;
+    public float spawnIntensity = 0.1f;
+
+    [Header("Wave References")]
+    public int[] waveIndices; // << Index ke WaveManager.waves
 
     public int GetRandomEnemyIndex()
     {
@@ -20,10 +32,7 @@ public class StageSummon
             return -1;
         }
 
-        float total = 0f;
-        foreach (var chance in spawnChances)
-            total += chance;
-
+        float total = spawnChances.Sum();
         float rand = Random.Range(0f, total);
         float cumulative = 0f;
 
@@ -42,13 +51,7 @@ public class StageManager : MonoBehaviour
 {
     public static StageManager Instance { get; private set; }
 
-    [Header("Stage Info")]
-    public int currentStage = 1;
-    public float hpMultiplier = 1f;
-    public float atkMultiplier = 1f;
-    public float spawnIntensity = 0.1f;
-
-    [Header("Stage Summons")]
+    [Header("Stage Settings")]
     public StageSummon[] stageSummons;
 
     [Header("References")]
@@ -56,12 +59,19 @@ public class StageManager : MonoBehaviour
     public EnemyManager enemyManager;
 
     [Header("Row Settings")]
-    public int totalRows = 5; // number of rows
+    public int totalRows = 5;
     private Dictionary<int, double> rowWeights;
     private HashSet<int> pickedRowsThisCycle;
 
-    private int summonedCount = 0;
-    private bool isSummonPhase = false;
+    public int currentStage = 1;
+    public bool isSummonPhase = false;
+    public bool targetAchieved = false;
+
+    // Multipliers for current stage
+    private float hpMultiplier = 1f;
+    private float atkMultiplier = 1f;
+    private float coinsMultiplier = 1f;
+    private float spawnIntensity = 0.1f;
 
     void Awake()
     {
@@ -76,23 +86,48 @@ public class StageManager : MonoBehaviour
     void Start()
     {
         StartStage(currentStage);
-        GameManager.Instance.SetStageProgress(0, stageSummons[currentStage - 1].stageTargetProgress, true);
+    }
+
+    public void UpdateTargetAchieved()
+    {
+        if(GameManager.Instance.currentProgress >= GameManager.Instance.targetProgress && !targetAchieved)
+        {
+            targetAchieved = true;
+            if (GameManager.Instance.highestStage < stageSummons.Length)
+            {
+                UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
+            }
+        }
     }
 
     void StartStage(int stageNumber)
     {
-        summonedCount = 0;
         isSummonPhase = true;
-        ApplyStageSettings();
 
-        // initialize row weights
+        StageSummon stageData = stageSummons[stageNumber - 1];
+
+        // Apply stage-specific multipliers
+        hpMultiplier = stageData.hpMultiplier;
+        atkMultiplier = stageData.atkMultiplier;
+        coinsMultiplier = stageData.coinsMultiplier;
+        spawnIntensity = stageData.spawnIntensity;
+
+        // Initialize row weights
         rowWeights = new Dictionary<int, double>();
         pickedRowsThisCycle = new HashSet<int>();
         for (int i = 0; i < totalRows; i++)
             rowWeights[i] = 1.0;
 
-        StartCoroutine(SummonPhaseCoroutine());
+        if (summonCoroutine != null)
+        {
+            StopCoroutine(summonCoroutine);
+            summonCoroutine = null;
+        }
+
+        summonCoroutine = StartCoroutine(SummonPhaseCoroutine());
     }
+
+    Coroutine summonCoroutine;
 
     IEnumerator SummonPhaseCoroutine()
     {
@@ -103,27 +138,81 @@ public class StageManager : MonoBehaviour
             int enemyIndex = stageData.GetRandomEnemyIndex();
             int row = GetWeightedRandomRow();
 
-            enemyManager.SpawnEnemy(enemyIndex, row);
-            summonedCount++;
+            enemyManager.SpawnEnemy(enemyIndex, row, true);
 
-            yield return new WaitForSeconds(0.5f / spawnIntensity); // spawn pacing
+            yield return new WaitForSeconds(0.5f / spawnIntensity);
         }
 
-        Debug.Log("✅ Summon phase completed, start waves!");
+        Debug.Log("✅ Summon phase completed, start stage waves!");
+
+        // Run waves using indices from WaveManager
+        if (stageData.waveIndices != null && stageData.waveIndices.Length > 0)
+        {
+            currentWaveCoroutine = StartCoroutine(RunStageWavesByIndex(stageData.waveIndices));
+            yield return currentWaveCoroutine;
+        }
+    }
+
+    private Coroutine currentWaveCoroutine;
+
+    private IEnumerator RunStageWavesByIndex(int[] waveIndices)
+    {
+        foreach (int waveIndex in waveIndices)
+        {
+            // Validasi index
+            if (waveIndex < 0 || waveIndex >= waveManager.waves.Count)
+            {
+                Debug.LogError($"❌ Invalid wave index: {waveIndex}");
+                continue;
+            }
+
+            Wave wave = waveManager.waves[waveIndex];
+            Debug.Log($"🌊 Starting Wave {waveIndex}: {wave.waveName}");
+
+            yield return StartCoroutine(waveManager.SpawnWave(wave));
+            yield return new WaitForSeconds(wave.delayBeforeNextWave);
+        }
+
+        Debug.Log($"🏆 Stage {currentStage} waves completed!");
+        OnWaveComplete();
+    }
+
+    public void FailedWave()
+    {
+        Debug.Log("💀 Wave Failed! Returning to summon phase...");
+
+        // Stop current wave coroutine
+        if (currentWaveCoroutine != null)
+        {
+            StopCoroutine(currentWaveCoroutine);
+            currentWaveCoroutine = null;
+        }
+
+        if (summonCoroutine != null)
+        {
+            StopCoroutine(summonCoroutine);
+            summonCoroutine = null;
+        }
+
+        // Stop all wave spawning in WaveManager
+        waveManager.StopAllCoroutines();
+
+        // Return to summon phase
+        isSummonPhase = true;
+        summonCoroutine = StartCoroutine(SummonPhaseCoroutine());
     }
 
     int GetWeightedRandomRow()
     {
-        // Reset if all rows picked once
         if (pickedRowsThisCycle.Count == totalRows)
         {
             pickedRowsThisCycle.Clear();
             for (int i = 0; i < totalRows; i++)
-                rowWeights[i] = 1.0; // reset weights
+                rowWeights[i] = 1.0;
         }
 
         double total = rowWeights.Values.Sum();
-        double roll = Random.value * (float)total;
+        double roll = Random.value * total;
         double cumulative = 0;
         int chosenRow = -1;
 
@@ -132,14 +221,14 @@ public class StageManager : MonoBehaviour
             cumulative += pair.Value;
             if (roll <= cumulative)
             {
-                chosenRow = pair.Key + 1;
+                chosenRow = pair.Key;
                 break;
             }
         }
 
         pickedRowsThisCycle.Add(chosenRow);
 
-        // Decrease chosen row weight, increase others slightly
+        // Adjust weights
         double decreaseFactor = 0.5;
         double increaseBoost = 0.2;
         foreach (var key in rowWeights.Keys.ToList())
@@ -151,8 +240,7 @@ public class StageManager : MonoBehaviour
         }
 
         NormalizeRowWeights();
-
-        return chosenRow;
+        return chosenRow + 1;
     }
 
     void NormalizeRowWeights()
@@ -162,7 +250,7 @@ public class StageManager : MonoBehaviour
             rowWeights[key] /= total / totalRows;
     }
 
-    void OnWaveComplete()
+    public void OnWaveComplete()
     {
         Debug.Log($"🏆 Stage {currentStage} cleared!");
         NextStage();
@@ -174,34 +262,29 @@ public class StageManager : MonoBehaviour
         if (currentStage > stageSummons.Length)
         {
             Debug.Log("🎯 All stages completed!");
-            return;
+            currentStage = stageSummons.Length;
+        }
+        else
+        {
+            targetAchieved = false;
+            UIManager.Instance.UpdateStageText(currentStage);
+        }
+
+        if(currentStage > GameManager.Instance.highestStage)
+        {
+            Debug.Log("🔄 New stage reached, resetting progress.");
+            GameManager.Instance.UpdateHighestStage(currentStage);
+            GameManager.Instance.SetStageProgress(0, stageSummons[currentStage - 1].stageTargetProgress, true);
+        } else
+        {
+            Debug.Log($"gabisa stage {currentStage} <= highest {GameManager.Instance.highestStage}");
         }
 
         StartStage(currentStage);
     }
 
-    void ApplyStageSettings()
-    {
-        switch (currentStage)
-        {
-            case 1:
-                hpMultiplier = 1f;
-                atkMultiplier = 1f;
-                spawnIntensity = 0.05f;
-                break;
-            case 2:
-                hpMultiplier = 1.1f;
-                atkMultiplier = 1.1f;
-                spawnIntensity = 0.05f;
-                break;
-            default:
-                hpMultiplier = 1f + (currentStage - 1) * 0.1f;
-                atkMultiplier = hpMultiplier;
-                spawnIntensity = 1f + (currentStage - 1) * 0.15f;
-                break;
-        }
-    }
-
+    // Helpers for scaled stats
     public float GetScaledHP(float baseHP) => baseHP * hpMultiplier;
     public float GetScaledATK(float baseATK) => baseATK * atkMultiplier;
+    public int GetScaledCoins(int baseCoins) => Mathf.RoundToInt(baseCoins * coinsMultiplier);
 }

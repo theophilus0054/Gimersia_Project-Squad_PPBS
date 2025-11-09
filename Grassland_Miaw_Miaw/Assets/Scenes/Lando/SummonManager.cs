@@ -68,6 +68,8 @@ public class SummonManager : MonoBehaviour
             return;
         }
 
+
+        // Ambil data evolusi
         EvolutionData evoData = EvolutionManager.Instance.evolutions[evolutionIndex];
         if (evoData.prefab == null)
         {
@@ -75,8 +77,33 @@ public class SummonManager : MonoBehaviour
             return;
         }
 
-        GameObject newObj = Instantiate(evoData.prefab, target.transform.position, Quaternion.identity);
+        GameObject newObj = Instantiate(evoData.prefab, target.transform.position, Quaternion.identity, ObjectManager.Instance.creatureSpawn.transform);
         DragScript drag = newObj.GetComponent<DragScript>();
+        drag.enabled = false;
+
+        if (GameManager.Instance != null)
+        {
+            if (!GameManager.Instance.IsUnlocked(evolutionIndex) && evolutionIndex != 0)
+            {
+                Debug.LogWarning($"❌ Evolution index {evolutionIndex} belum di-unlock! ({EvolutionManager.Instance.evolutions[evolutionIndex].name})");
+                drag.enabled = false;
+                GameManager.Instance.UnlockIndex(evolutionIndex);
+                // 🔁 Jalankan animasi, lalu aktifkan kembali drag
+                AnimationScript.Play(newObj, () =>
+                {
+                    drag.enabled = true;
+                    Debug.Log($"{newObj.name} animasi selesai, DragScript diaktifkan kembali.");
+                });
+            }
+            else
+            {
+                drag.enabled = true;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ GameManager belum siap, tidak bisa cek status unlock.");
+        }
         if (drag == null)
         {
             Debug.LogError($"Instantiated object for evolution {evoData.name} has no DragScript component!");

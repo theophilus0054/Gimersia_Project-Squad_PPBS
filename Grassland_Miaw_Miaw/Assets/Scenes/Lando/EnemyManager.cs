@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor.Build;
 
 [System.Serializable]
 public enum EnemyType
@@ -19,6 +20,7 @@ public class EnemyData
     public string name;
     public EnemyType type;
     public float hp;
+    public int baseCoin;
     public float movementSpeed;
     public float atk;
     public float atkspd;
@@ -29,6 +31,7 @@ public class EnemyData
         string name,
         EnemyType type,
         float hp,
+        int baseCoin,
         float movementSpeed,
         float atk,
         float atkspd,
@@ -38,6 +41,7 @@ public class EnemyData
         this.name = name;
         this.type = type;
         this.hp = hp;
+        this.baseCoin = baseCoin;
         this.movementSpeed = movementSpeed;
         this.atk = atk;
         this.atkspd = atkspd;
@@ -46,7 +50,7 @@ public class EnemyData
 
     public override string ToString()
     {
-        return $"[{index}] {name} ({type}) | HP: {hp} | ATK: {atk} | ATKSPD: {atkspd} | Speed: {movementSpeed} | Prefab: {prefab?.name ?? "None"}";
+        return $"[{index}] {name} ({type}) | HP: {hp} | BaseCoin: {baseCoin} | ATK: {atk} | ATKSPD: {atkspd} | Speed: {movementSpeed} | Prefab: {prefab?.name ?? "None"}";
     }
 }
 
@@ -94,18 +98,18 @@ public class EnemyManager : MonoBehaviour
     }
 
     // ✅ Spawn enemy by index
-    public void SpawnEnemy(int index, int row)
+    public GameObject SpawnEnemy(int index, int row, bool isSummon)
     {
         if (index < 0 || index >= enemies.Count)
         {
             Debug.LogWarning($"⚠️ Enemy index {index} invalid!");
-            return;
+            return null;
         }
 
         if (row < 1 || row > 6)
         {
             Debug.LogWarning($"⚠️ Invalid row {row}! Must be between 1 and 5.");
-            return;
+            return null;
         }
 
         EnemyData data = enemies[index];
@@ -113,7 +117,7 @@ public class EnemyManager : MonoBehaviour
         if (data.prefab == null)
         {
             Debug.LogError($"❌ Enemy prefab for {data.name} is NULL!");
-            return;
+            return null;
         }
 
         // --- Hitung posisi berdasarkan row ---
@@ -123,10 +127,14 @@ public class EnemyManager : MonoBehaviour
 
         Vector3 spawnPos = new Vector3(baseX, baseY - offsetY, 0f);
 
-        GameObject enemyObj = Instantiate(data.prefab, spawnPos, Quaternion.identity);
+        GameObject enemyObj = Instantiate(data.prefab, spawnPos, Quaternion.identity, ObjectManager.Instance.enemySpawn.transform);
+
         enemyObj.name = $"{data.name}_Row{row}";
+        enemyObj.GetComponent<Enemy>().dropItemOnDeath = isSummon;
+        enemyObj.GetComponent<Enemy>().getProgress = (StageManager.Instance.currentStage == GameManager.Instance.highestStage);
 
         Debug.Log($"👾 Spawned enemy '{data.name}' at Row {row}, Pos {spawnPos}");
+        return enemyObj;
     }
 
     // ✅ Optional: Get all enemies of a certain type

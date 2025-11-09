@@ -101,7 +101,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: a5935ca56e45f9f45874bcc565c5f011, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -151,6 +151,9 @@ MonoBehaviour:
   moveSpeed: 2
   enemyIndex: 0
   pointProgression: 1
+  flashMaterial: {fileID: 0}
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashDuration: 0.2
 --- !u!61 &1342124627112182239
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -457,7 +460,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.66566825, y: 0.16641712}
+  m_Offset: {x: 0.86654234, y: 0.017944962}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -467,7 +470,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.6748414, y: 2.2733235}
+  m_Size: {x: 1.2730932, y: 1.1204805}
   m_EdgeRadius: 0
 --- !u!114 &5473780423897345444
 MonoBehaviour:

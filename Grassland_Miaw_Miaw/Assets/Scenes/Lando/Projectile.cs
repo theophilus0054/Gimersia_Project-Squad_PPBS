@@ -23,8 +23,7 @@ public class Projectile : MonoBehaviour
         }
 
         // gerakkan peluru menuju target
-        Vector3 dir = (target.position - transform.position).normalized;
-        transform.position += dir * speed * Time.deltaTime;
+        transform.position += Vector3.right * speed * Time.deltaTime;
     }
 
     private void OnTriggerEnter2D(Collider2D other)

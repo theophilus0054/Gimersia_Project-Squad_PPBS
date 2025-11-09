@@ -38,6 +38,7 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         savePath = Application.persistentDataPath + "/gamedata.json";
+        ResetData();
         LoadData();
     }
 
@@ -52,6 +53,7 @@ public class GameManager : MonoBehaviour
     public void AddCoins(int amount)
     {
         totalCoins += amount;
+        Debug.Log($"Added {amount} coins. Total now: {totalCoins}");
         SaveData();
     }
 
@@ -214,6 +216,7 @@ public class GameManager : MonoBehaviour
             highestStage = 1;
             gridLayout = new int[5, 6];
             unlockedIndex = new bool[100];
+            unlockedIndex[0] = true;
             currentProgress = 0;
             targetProgress = 0;
         }
@@ -229,7 +232,9 @@ public class GameManager : MonoBehaviour
         gridLayout = new int[5, 6];
         unlockedIndex = new bool[100];
         currentProgress = 0;
-        targetProgress = 0;
+        targetProgress = StageManager.Instance.stageSummons[0].stageTargetProgress;
+        unlockedIndex = new bool[100];
+        unlockedIndex[0] = true;
         SaveData();
     }
 }
