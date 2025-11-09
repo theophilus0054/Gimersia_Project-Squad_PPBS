@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 32a02516ee368d74bba6fdc4ba2cea07
+guid: 3822bf6826dac3146a3f1d4592dcb12f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4429871370375950830
-    second: Evo4_0
+      213: 3436871692153305872
+    second: Group 128_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Evo4_0
+      name: Group 128_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 121
-        height: 121
+        width: 158
+        height: 160
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 21e8118857fe582c0800000000000000
-      internalID: -4429871370375950830
+      spriteID: 01bb46d389832bf20800000000000000
+      internalID: 3436871692153305872
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Evo4_0: -4429871370375950830
+      Group 128_0: 3436871692153305872
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

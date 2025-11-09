@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 32a02516ee368d74bba6fdc4ba2cea07
+guid: d15906b8e9c7249438e2831fb9588078
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4429871370375950830
-    second: Evo4_0
+      213: -8279534510879220247
+    second: Rectangle 101 (1)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Evo4_0
+      name: Rectangle 101 (1)_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 121
-        height: 121
+        width: 741
+        height: 583
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 21e8118857fe582c0800000000000000
-      internalID: -4429871370375950830
+      spriteID: 9edd47daa3f291d80800000000000000
+      internalID: -8279534510879220247
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Evo4_0: -4429871370375950830
+      Rectangle 101 (1)_0: -8279534510879220247
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
