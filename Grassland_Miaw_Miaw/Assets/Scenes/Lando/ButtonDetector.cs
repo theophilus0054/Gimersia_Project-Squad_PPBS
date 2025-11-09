@@ -6,6 +6,7 @@ public class ButtonDetector : MonoBehaviour
 
     private void OnMouseDown()
     {
+        Debug.Log("Summon T1 Unagi");
         SummonManager.SummonEvolution(evolutionIndex);
     }
 }

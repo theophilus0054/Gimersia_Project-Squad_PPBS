@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8fed39579601cf1469094cce32342b18
+guid: 70431056209b9c34491c976529e4861e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3070720277760755030
-    second: Evo3_0
+      213: -7018298845619010464
+    second: Painted Wood_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,17 +96,43 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Evo3_0
+      name: Painted Wood_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 121
-        height: 121
+        width: 689
+        height: 919
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: aaa3b7f3d2c9265d0800000000000000
-      internalID: -3070720277760755030
+      spriteID: 064485b626ef99e90800000000000000
+      internalID: -7018298845619010464
       vertices: []
       indices: 
       edges: []
@@ -135,9 +161,16 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Evo3_0: -3070720277760755030
+      Painted Wood_0: -7018298845619010464
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 312704
+  packageName: 2D Sprite Blend Modes
+  packageVersion: 1.0
+  assetPath: Assets/PxlDev/Sprite Blending Layers/Samples/Textures/Painted_Planks.png
+  uploadId: 737191
