@@ -4,7 +4,7 @@ using System.Collections;
 
 public class AnimationScript : MonoBehaviour
 {
-    private static AnimationScript instance; 
+    private static AnimationScript instance;
     private static Camera cam;
 
     [Header("Default Settings")]
@@ -13,6 +13,7 @@ public class AnimationScript : MonoBehaviour
     public float clickFadeDuration = 1f;
     public float shakeDuration = 0.5f;
     public float shakeAngle = 10f;
+    public float animationZOffset = -5f; // Nilai Z saat animasi (lebih negatif = lebih depan)
     public GameObject whiteLightPrefab;
 
     private SpriteRenderer spriteRenderer;
@@ -77,10 +78,11 @@ public class AnimationScript : MonoBehaviour
 
         spriteRenderer.color = Color.black;
 
-        // 1️⃣ Pindah ke tengah & membesar
+        // 1️⃣ Pindah ke tengah & membesar + naikkan Z
         Vector3 centerPos = cam.ScreenToWorldPoint(
             new Vector3(Screen.width / 2, Screen.height / 2, -cam.transform.position.z)
         );
+        centerPos.z = animationZOffset; // Set Z ke posisi yang lebih depan
 
         float t = 0f;
         Vector3 startPos = target.transform.position;
@@ -118,7 +120,7 @@ public class AnimationScript : MonoBehaviour
         // 4️⃣ Efek klik (reveal + shake)
         yield return StartCoroutine(OnClickReveal());
 
-        // 5️⃣ Kembali ke posisi semula
+        // 5️⃣ Kembali ke posisi semula (termasuk Z original)
         yield return StartCoroutine(ReturnToOriginal());
 
         // ✅ Callback selesai
@@ -144,7 +146,7 @@ public class AnimationScript : MonoBehaviour
 
             // 🌟 Fade IN
             float fadeInTime = 0f;
-            float fadeInDuration = clickFadeDuration * 0.5f; // first half of time for fade-in
+            float fadeInDuration = clickFadeDuration * 0.5f;
             while (fadeInTime < fadeInDuration)
             {
                 fadeInTime += Time.deltaTime;
@@ -154,12 +156,12 @@ public class AnimationScript : MonoBehaviour
                 yield return null;
             }
 
-            // 💫 Flicker effect (optional, smoother than PingPong)
+            // 💫 Flicker effect
             float time = 0f;
             while (time < clickFadeDuration)
             {
                 time += Time.deltaTime;
-                float alpha = 1f - Mathf.PingPong(time * 2f, 0.5f); // flicker range 0.5–1
+                float alpha = 1f - Mathf.PingPong(time * 2f, 0.5f);
                 lightColor.a = alpha;
                 lightSprite.color = lightColor;
                 yield return null;
