@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 30b428347caac384aa4dea1b2012f79b
+guid: 5838a1438b93a4b429149f265ed7f86b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1036067340986156883
-    second: Rectangle 140 (2)_0
+      213: 1109101124000141853
+    second: coral only map 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Rectangle 140 (2)_0
+      name: coral only map 1_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 259
-        height: 899
+        width: 1915
+        height: 1080
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3570dded1c9d06e00800000000000000
-      internalID: 1036067340986156883
+      spriteID: d12d3049891546f00800000000000000
+      internalID: 1109101124000141853
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Rectangle 140 (2)_0: 1036067340986156883
+      coral only map 1_0: 1109101124000141853
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
