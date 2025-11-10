@@ -129,7 +129,7 @@ public class Enemy : MonoBehaviour, IDamageable
     // ============================================================
     public bool IsDead => isDead;
 
-    private IEnumerator Die()
+    public IEnumerator Die()
     {
         int duration = 1; // durasi fade out dalam detik
         float elapsed = 0f;

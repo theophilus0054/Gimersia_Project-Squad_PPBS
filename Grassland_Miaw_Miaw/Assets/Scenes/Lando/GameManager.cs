@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         LoadGrid(); // summon semua creature sesuai JSON saat start
+        UIManager.Instance.coinText.text = totalCoins.ToString();
     }
 
     // -------------------------
@@ -54,6 +55,7 @@ public class GameManager : MonoBehaviour
     {
         totalCoins += amount;
         Debug.Log($"Added {amount} coins. Total now: {totalCoins}");
+        UIManager.Instance.coinText.text = totalCoins.ToString();
         SaveData();
     }
 
@@ -62,6 +64,7 @@ public class GameManager : MonoBehaviour
         if (totalCoins >= amount)
         {
             totalCoins -= amount;
+            UIManager.Instance.coinText.text = totalCoins.ToString();
             SaveData();
             return true;
         }

@@ -15,7 +15,7 @@ public class Wave
     public string waveName;
     public List<WaveEnemy> enemies = new List<WaveEnemy>();
     [Tooltip("Delay antar spawn untuk seluruh wave")]
-    public float delayBetweenSpawns = 0.5f;
+    public float delayBetweenSpawns = 1f;
     [Tooltip("Delay sebelum wave berikutnya")]
     public float delayBeforeNextWave = 3f;
 }

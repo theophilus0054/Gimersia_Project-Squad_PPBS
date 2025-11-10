@@ -355,7 +355,6 @@ GameObject:
   - component: {fileID: 3611316938265853476}
   - component: {fileID: 5036223003460618117}
   - component: {fileID: 7906891480134218775}
-  - component: {fileID: 2594909775493315340}
   - component: {fileID: 3660881998590216597}
   m_Layer: 7
   m_Name: UnagiT1
@@ -570,19 +569,6 @@ MonoBehaviour:
     tileRange: 0
     effects: 
     prefab: {fileID: 0}
---- !u!114 &2594909775493315340
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5847998885843973870}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41270e0ea8a966d4f97eee73ddf356ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  spriteName: 
 --- !u!95 &3660881998590216597
 Animator:
   serializedVersion: 7

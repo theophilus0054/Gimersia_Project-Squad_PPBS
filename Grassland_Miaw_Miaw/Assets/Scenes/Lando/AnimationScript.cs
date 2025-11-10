@@ -7,14 +7,19 @@ public class AnimationScript : MonoBehaviour
     private static AnimationScript instance;
     private static Camera cam;
 
-    [Header("Default Settings")]
+    [Header("Reveal Settings")]
     public float moveDuration = 1.5f;
     public float scaleMultiplier = 2f;
     public float clickFadeDuration = 1f;
     public float shakeDuration = 0.5f;
     public float shakeAngle = 10f;
-    public float animationZOffset = -5f; // Nilai Z saat animasi (lebih negatif = lebih depan)
+    public float animationZOffset = -5f;
     public GameObject whiteLightPrefab;
+
+    [Header("Slide Settings")]
+    public float slideDuration = 1.5f;
+    public float cooldownDuration = 3f;
+    public float xOffset = 5f;
 
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
@@ -24,6 +29,9 @@ public class AnimationScript : MonoBehaviour
     private bool clicked = false;
     private Action onCompleteCallback;
 
+    // ===================================================
+    // 🧩 Singleton Setup
+    // ===================================================
     private void Awake()
     {
         if (instance == null)
@@ -37,12 +45,8 @@ public class AnimationScript : MonoBehaviour
         }
     }
 
-    // ===================================================
-    // 📢 STATIC ENTRY POINT
-    // ===================================================
-    public static void Play(GameObject targetObj, Action onComplete = null)
+    private static void EnsureManager()
     {
-        // Pastikan manager ada
         if (instance == null)
         {
             GameObject mgr = new GameObject("AnimationScriptManager");
@@ -52,12 +56,25 @@ public class AnimationScript : MonoBehaviour
 
         if (cam == null)
             cam = Camera.main;
-
-        instance.StartCoroutine(instance.RevealSequence(targetObj, onComplete));
     }
 
     // ===================================================
-    // 🎬 MAIN SEQUENCE
+    // 🎬 STATIC ENTRY POINTS
+    // ===================================================
+    public static void RevealPlay(GameObject targetObj, Action onComplete = null)
+    {
+        EnsureManager();
+        instance.StartCoroutine(instance.RevealSequence(targetObj, onComplete));
+    }
+
+    public static void SlidePlay(GameObject targetObj, float distance = 5f, float duration = 2f, bool easeOutExit = true, Action onComplete = null)
+    {
+        EnsureManager();
+        instance.StartCoroutine(instance.SlideSequence(targetObj, distance, duration, easeOutExit, onComplete));
+    }
+
+    // ===================================================
+    // 🎥 REVEAL ANIMATION
     // ===================================================
     private IEnumerator RevealSequence(GameObject targetObj, Action onComplete)
     {
@@ -78,11 +95,11 @@ public class AnimationScript : MonoBehaviour
 
         spriteRenderer.color = Color.black;
 
-        // 1️⃣ Pindah ke tengah & membesar + naikkan Z
+        // Pindah ke tengah & membesar
         Vector3 centerPos = cam.ScreenToWorldPoint(
             new Vector3(Screen.width / 2, Screen.height / 2, -cam.transform.position.z)
         );
-        centerPos.z = animationZOffset; // Set Z ke posisi yang lebih depan
+        centerPos.z = animationZOffset;
 
         float t = 0f;
         Vector3 startPos = target.transform.position;
@@ -98,9 +115,7 @@ public class AnimationScript : MonoBehaviour
             yield return null;
         }
 
-        // 2️⃣ Jadi siluet hitam
-
-        // 3️⃣ Tunggu klik pada target
+        // Tunggu klik
         while (!clicked)
         {
             if (Input.GetMouseButtonDown(0))
@@ -117,21 +132,18 @@ public class AnimationScript : MonoBehaviour
             yield return null;
         }
 
-        // 4️⃣ Efek klik (reveal + shake)
+        // Efek klik (reveal)
         yield return StartCoroutine(OnClickReveal());
 
-        // 5️⃣ Kembali ke posisi semula (termasuk Z original)
+        // Kembali ke posisi semula
         yield return StartCoroutine(ReturnToOriginal());
 
-        // ✅ Callback selesai
         onCompleteCallback?.Invoke();
     }
 
     private IEnumerator OnClickReveal()
     {
-        // 🔆 ENABLE EXISTING WHITE LIGHT
         SpriteRenderer lightSprite = null;
-
         if (whiteLightPrefab != null)
         {
             whiteLightPrefab.SetActive(true);
@@ -144,7 +156,6 @@ public class AnimationScript : MonoBehaviour
             lightColor.a = 0f;
             lightSprite.color = lightColor;
 
-            // 🌟 Fade IN
             float fadeInTime = 0f;
             float fadeInDuration = clickFadeDuration * 0.5f;
             while (fadeInTime < fadeInDuration)
@@ -156,7 +167,6 @@ public class AnimationScript : MonoBehaviour
                 yield return null;
             }
 
-            // 💫 Flicker effect
             float time = 0f;
             while (time < clickFadeDuration)
             {
@@ -167,7 +177,6 @@ public class AnimationScript : MonoBehaviour
                 yield return null;
             }
 
-            // 🔅 Fade OUT
             float fadeOutTime = 0f;
             while (fadeOutTime < fadeInDuration)
             {
@@ -179,7 +188,6 @@ public class AnimationScript : MonoBehaviour
             }
         }
 
-        // 🌈 Reveal original color
         float t = 0f;
         while (t < clickFadeDuration)
         {
@@ -189,11 +197,8 @@ public class AnimationScript : MonoBehaviour
         }
         spriteRenderer.color = originalColor;
 
-        // 🌀 Shake
         yield return StartCoroutine(ShakeObject());
-
-        // 🔻 Turn off after complete
-        whiteLightPrefab.SetActive(false);
+        whiteLightPrefab?.SetActive(false);
     }
 
     private IEnumerator ShakeObject()
@@ -229,5 +234,67 @@ public class AnimationScript : MonoBehaviour
 
         target.transform.position = originalPos;
         target.transform.localScale = originalScale;
+    }
+
+    // ===================================================
+    // 🎞️ SLIDE ANIMATION
+    // ===================================================
+
+    private IEnumerator SlideSequence(GameObject targetObj, float distance, float duration, bool easeOutExit, Action onComplete)
+    {
+        target = targetObj;
+        Vector3 start = target.transform.position;
+        Vector3 middle = target.transform.position - Vector3.right * distance;
+        Vector3 end = target.transform.position - (Vector3.right * distance * 2f);
+
+        // Geser kanan → tengah (cepat → lambat)
+        float t = 0f;
+        while (t < duration / 2f)
+        {
+            t += Time.deltaTime;
+            float progress = Mathf.SmoothStep(0, 1, t / (duration / 2f));
+            target.transform.position = Vector3.Lerp(start, middle, progress);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(1f); // cooldown di tengah
+
+        // Tengah → kiri (pilihan gaya easing)
+        t = 0f;
+        while (t < duration / 2f)
+        {
+            t += Time.deltaTime;
+
+            float progress;
+            if (easeOutExit)
+                progress = Mathf.SmoothStep(0, 1, t / (duration / 2f)); // cepat → lambat
+            else
+                progress = Mathf.Pow(t / (duration / 2f), 2f); // lambat → cepat (dramatis)
+
+            target.transform.position = Vector3.Lerp(middle, end, progress);
+            yield return null;
+        }
+
+        target.transform.position = end;
+        target.transform.position = start;
+        if(target.name == "WaveFailedFrame")
+        {
+            UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
+        }
+        onComplete?.Invoke();
+    }
+
+
+    private IEnumerator MoveObject(GameObject obj, Vector3 from, Vector3 to, float duration)
+    {
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float progress = Mathf.SmoothStep(0, 1, t / duration);
+            obj.transform.position = Vector3.Lerp(from, to, progress);
+            yield return null;
+        }
+        obj.transform.position = to;
     }
 }

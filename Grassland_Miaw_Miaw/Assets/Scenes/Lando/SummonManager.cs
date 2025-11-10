@@ -89,7 +89,7 @@ public class SummonManager : MonoBehaviour
                 drag.enabled = false;
                 GameManager.Instance.UnlockIndex(evolutionIndex);
                 // 🔁 Jalankan animasi, lalu aktifkan kembali drag
-                AnimationScript.Play(newObj, () =>
+                AnimationScript.RevealPlay(newObj, () =>
                 {
                     drag.enabled = true;
                     Debug.Log($"{newObj.name} animasi selesai, DragScript diaktifkan kembali.");

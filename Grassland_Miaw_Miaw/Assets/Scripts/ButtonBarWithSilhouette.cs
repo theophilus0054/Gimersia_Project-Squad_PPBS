@@ -104,6 +104,7 @@ public class ButtonBarWithSilhouette : MonoBehaviour
             targetIcon = icons[index];
 
         StopAllCoroutines();
+        CameraController.Instance.MoveCameraSmooth(index + 1, 0.5f);
         StartCoroutine(AnimateButtons());
     }
 

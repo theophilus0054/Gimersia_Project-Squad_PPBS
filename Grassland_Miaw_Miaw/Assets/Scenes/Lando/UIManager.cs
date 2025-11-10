@@ -10,9 +10,16 @@ public class UIManager : MonoBehaviour
     public GameObject stageBack;
     public GameObject stageNext;
     public GameObject WaveStagePanel;
+    public GameObject WaveSurrenderPanel;
+    public GameObject WaveEndlessPanel;
+
+    [Header("Wave Condition Frame")]
+    public GameObject waveFailedFrame;
+    public GameObject waveFinishedFrame;
 
     [Header("Stage Info")]
     public TextMeshPro stageText;
+    public TextMeshProUGUI coinText;
 
     private void Awake()
     {
@@ -40,23 +47,32 @@ public class UIManager : MonoBehaviour
             stageBack.SetActive(true);
 
         if(stageNumber >= GameManager.Instance.highestStage)
+        {        
             stageNext.SetActive(false);
+            WaveEndlessPanel.GetComponent<EndlessScript>().DeactivateButton();
+        }
         else
+        {
             stageNext.SetActive(true);
+            WaveEndlessPanel.GetComponent<EndlessScript>().ActiveButton();
+        }
     }
 
     // Optional: Button callbacks
     public void OnClickStageBack()
     {
-        int prevStage = Mathf.Max(1, StageManager.Instance.currentStage - 1) - 1;
-        StageManager.Instance.currentStage = prevStage;
-        StageManager.Instance.NextStage();
-        UpdateStageText(prevStage+1);
+        if (StageManager.Instance.isSummonPhase)
+        {
+            int prevStage = Mathf.Max(1, StageManager.Instance.currentStage - 1) - 1;
+            StageManager.Instance.currentStage = prevStage;
+            StageManager.Instance.NextStage();
+            UpdateStageText(prevStage+1);
+        }
     }
 
     public void OnClickStageNext()
     {
-        if(StageManager.Instance.currentStage < GameManager.Instance.highestStage)
+        if(StageManager.Instance.currentStage < GameManager.Instance.highestStage && StageManager.Instance.isSummonPhase)
         { 
             UpdateStageText(StageManager.Instance.currentStage+1);
             StageManager.Instance.NextStage();

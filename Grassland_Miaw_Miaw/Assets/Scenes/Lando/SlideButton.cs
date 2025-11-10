@@ -17,12 +17,21 @@ public class SlideButton : MonoBehaviour
 
     void OnMouseDown()
     {
-        StartWave();
+        // ✅ Cek apakah tombol sudah di posisi aktif sebelum bisa diklik
+        if (IsAtActivePosition())
+        {
+            StartWave();
+        }
+        else
+        {
+            Debug.Log("❌ Belum bisa ditekan — tombol belum di posisi aktif!");
+        }
     }
 
     // StartWave slide
     public void StartWave()
     {
+        UIManager.Instance.WaveSurrenderPanel.GetComponent<SurrenderScript>().ActiveButton();
         StartSlide(yStart);
         Debug.Log("Wave Started!");
         StageManager.Instance.isSummonPhase = false;
@@ -49,5 +58,11 @@ public class SlideButton : MonoBehaviour
         }
 
         transform.position = new Vector3(transform.position.x, targetY, transform.position.z);
+    }
+
+    private bool IsAtActivePosition()
+    {
+        float targetY = (transform.parent ? transform.parent.position.y : 0f) + yActive;
+        return Mathf.Abs(transform.position.y - targetY) < 0.01f; // toleransi kecil
     }
 }

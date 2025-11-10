@@ -6,8 +6,13 @@ public class Creature : MonoBehaviour, IDamageable
     [Header("Creature Stats")]
     public EvolutionData data;
 
+    [Header("Revive Settings")]
+    public float reviveDelay = 10f;
+
     private float currentHP;
     private bool isDead = false;
+    private Animator animator;
+    private Collider2D col;
 
     void Awake()
     {
@@ -16,13 +21,10 @@ public class Creature : MonoBehaviour, IDamageable
             data = EvolutionManager.Instance.GetEvolution(GetComponent<DragScript>().evolutionIndex);
         }
 
-        // Initialize stats from EvolutionData
+        animator = GetComponent<Animator>();
+        col = GetComponent<Collider2D>();
+
         currentHP = data.hp;
-    }
-
-    void Update()
-    {
-
     }
 
     // -------------------------
@@ -45,11 +47,36 @@ public class Creature : MonoBehaviour, IDamageable
 
     protected virtual void Die()
     {
+        if (isDead) return;
         isDead = true;
-        GetComponent<Animator>()?.SetTrigger("isDead");
-        Collider2D col = GetComponent<Collider2D>();
+
+        animator?.SetTrigger("isDead");
         if (col != null)
             col.enabled = false;
+
+        StartCoroutine(HandleRevive());
+    }
+
+    private IEnumerator HandleRevive()
+    {
+        // tunggu waktu reviveDelay dulu
+        yield return new WaitForSeconds(reviveDelay);
+
+        // tunggu sampai summon phase aktif
+        while (!StageManager.Instance.isSummonPhase)
+            yield return null;
+
+        Revive();
+    }
+
+    private void Revive()
+    {
+        isDead = false;
+        currentHP = data.hp;
+        col.enabled = true;
+        animator?.SetTrigger("isRevived");
+
+        Debug.Log($"{name} has revived!");
     }
 
     // -------------------------
