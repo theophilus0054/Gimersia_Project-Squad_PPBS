@@ -98,6 +98,7 @@ public class Enemy : MonoBehaviour, IDamageable
                 GameManager.Instance.AddCoins(Random.Range(baseCoin, Mathf.RoundToInt(baseCoin * 1.3f)));
             }
             GetComponent<Animator>()?.SetTrigger("isDead");
+            AudioManager.Instance.PlayEnemyDead(gameObject.GetComponent<AudioSource>());
             GetComponent<Collider2D>().enabled = false;
             isDead = true;
             rb.linearVelocity = Vector2.zero;
@@ -134,7 +135,7 @@ public class Enemy : MonoBehaviour, IDamageable
         int duration = 1; // durasi fade out dalam detik
         float elapsed = 0f;
         Color originalColor = spriteRenderer.color;
-
+        
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;

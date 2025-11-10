@@ -131,6 +131,7 @@
             }
 
             var projObj = Instantiate(projectilePrefab, fireOrigin.position, Quaternion.identity);
+            AudioManager.Instance.PlayUnagiBubble(gameObject.GetComponent<AudioSource>());
             Projectile p = projObj.GetComponent<Projectile>();
             if (p != null)
             {

@@ -35,6 +35,7 @@ public class Projectile : MonoBehaviour
             var dmgComp = other.GetComponent<IDamageable>();
             if (dmgComp != null)
             {
+                AudioManager.Instance.PlayBubble(gameObject.GetComponent<AudioSource>());
                 dmgComp.TakeDamage(damage);
             }
 
