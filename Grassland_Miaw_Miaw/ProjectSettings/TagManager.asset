@@ -57,5 +57,11 @@ TagManager:
   - name: UI
     uniqueID: 1985760185
     locked: 0
+  - name: UPGRADE
+    uniqueID: 4049114071
+    locked: 0
+  - name: SUMMON
+    uniqueID: 3384067279
+    locked: 0
   m_RenderingLayers:
   - Default
