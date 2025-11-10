@@ -7,18 +7,30 @@ public class EndlessScript : MonoBehaviour
     public float yStart = 1.5f;   // relatif ke parent
     public float duration = 0.5f;
 
+    public bool isActive = false;
+
     private Coroutine slideCoroutine;
 
     // ActiveButton slide
     public void ActiveButton()
     {
+        isActive = true;
         StartSlide(yActive);
+        if (GameManager.Instance.currentProgress >= GameManager.Instance.targetProgress)
+        {
+            UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().DeactivateButton();
+        }
     }
 
     // StopWave slide
-    public void DeactivateButton()
+    public void DeactivateButton(bool activeWaveFight)
     {
+        isActive = false;
         StartSlide(yStart);
+        if (activeWaveFight && GameManager.Instance.currentProgress >= GameManager.Instance.targetProgress)
+        {
+            UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
+        }
         Debug.Log("Endless Mode!");
     }
 

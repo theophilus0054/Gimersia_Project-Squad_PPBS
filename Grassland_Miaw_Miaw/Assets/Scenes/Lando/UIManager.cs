@@ -47,14 +47,26 @@ public class UIManager : MonoBehaviour
             stageBack.SetActive(true);
 
         if(stageNumber >= GameManager.Instance.highestStage)
-        {        
+        {
             stageNext.SetActive(false);
-            WaveEndlessPanel.GetComponent<EndlessScript>().DeactivateButton();
+            if(stageNumber >= StageManager.Instance.stageSummons.Length)
+            {
+                WaveEndlessPanel.GetComponent<EndlessScript>().ActiveButton();
+                return;
+            }
+            if(GameManager.Instance.currentProgress >= GameManager.Instance.targetProgress)
+            {
+                WaveEndlessPanel.GetComponent<EndlessScript>().DeactivateButton(true);
+            } else
+            {
+                WaveEndlessPanel.GetComponent<EndlessScript>().DeactivateButton(false);
+            }
         }
         else
         {
             stageNext.SetActive(true);
             WaveEndlessPanel.GetComponent<EndlessScript>().ActiveButton();
+            WaveStagePanel.GetComponent<SlideButton>().DeactivateButton();
         }
     }
 

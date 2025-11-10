@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public class SlideButton : MonoBehaviour
 {
@@ -12,6 +13,17 @@ public class SlideButton : MonoBehaviour
     // ActiveButton slide
     public void ActiveButton()
     {
+        if (UIManager.Instance.WaveEndlessPanel.GetComponent<EndlessScript>().isActive || GameManager.Instance.currentProgress < GameManager.Instance.targetProgress || GameManager.Instance.highestStage != StageManager.Instance.currentStage)
+        {
+            Debug.Log("❌ Tidak bisa aktifkan tombol");
+            return;
+        }
+        
+        if (StageManager.Instance.currentStage >= StageManager.Instance.stageSummons.Length)
+        {
+            UIManager.Instance.WaveEndlessPanel.GetComponent<EndlessScript>().ActiveButton();
+            return;
+        }
         StartSlide(yActive);
     }
 
@@ -26,6 +38,11 @@ public class SlideButton : MonoBehaviour
         {
             Debug.Log("❌ Belum bisa ditekan — tombol belum di posisi aktif!");
         }
+    }
+
+    public void DeactivateButton()
+    {
+        StartSlide(yStart);
     }
 
     // StartWave slide
