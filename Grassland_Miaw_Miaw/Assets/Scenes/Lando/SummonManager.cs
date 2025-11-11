@@ -70,14 +70,14 @@ public class SummonManager : MonoBehaviour
 
 
         // Ambil data evolusi
-        EvolutionData evoData = EvolutionManager.Instance.evolutions[evolutionIndex];
-        if (evoData.prefab == null)
+        CreatureData evoData = EvolutionManager.Instance.evolutions[evolutionIndex];
+        if (evoData.summonPrefab == null)
         {
             Debug.LogError($"Prefab for evolution index {evolutionIndex} ({evoData.name}) not set!");
             return;
         }
 
-        GameObject newObj = Instantiate(evoData.prefab, target.transform.position, Quaternion.identity, ObjectManager.Instance.creatureSpawn.transform);
+        GameObject newObj = Instantiate(evoData.summonPrefab, target.transform.position, Quaternion.identity, ObjectManager.Instance.creatureSpawn.transform);
         DragScript drag = newObj.GetComponent<DragScript>();
         drag.enabled = false;
 
@@ -85,7 +85,7 @@ public class SummonManager : MonoBehaviour
         {
             if (!GameManager.Instance.IsUnlocked(evolutionIndex) && evolutionIndex != 0)
             {
-                Debug.LogWarning($"❌ Evolution index {evolutionIndex} belum di-unlock! ({EvolutionManager.Instance.evolutions[evolutionIndex].name})");
+                Debug.Log($"❌ Evolution index {evolutionIndex} akan di-unlock! ({EvolutionManager.Instance.evolutions[evolutionIndex].name})");
                 drag.enabled = false;
                 GameManager.Instance.UnlockIndex(evolutionIndex);
                 // 🔁 Jalankan animasi, lalu aktifkan kembali drag

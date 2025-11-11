@@ -19,6 +19,9 @@ public class ButtonBarWithSilhouette : MonoBehaviour
 
     [Header("Silhouette")]
     public RectTransform silhouette;
+
+    public GameObject lockedPopup1;
+    public GameObject lockedPopup5;
     public float silhouetteMoveSpeed = 15f; // Kecepatan follow (semakin besar semakin cepat)
 
     private int selectedIndex = 2;
@@ -95,17 +98,46 @@ public class ButtonBarWithSilhouette : MonoBehaviour
         LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);
     }
 
+    private Coroutine fadeRoutine1;
+    private Coroutine fadeRoutine5;
+    private Coroutine animateRoutine;
     public void OnButtonClicked(int index)
     {
+        if (index == 0)
+        {
+            if (fadeRoutine1 != null)
+            {
+                StopCoroutine(fadeRoutine1);
+            }
+
+            // Start fade baru
+            fadeRoutine1 = StartCoroutine(ActivateAndFadeOut(lockedPopup1, 2f));
+            return;
+        }
+        else if (index == 4)
+        {
+            if (fadeRoutine5 != null)
+            {
+                StopCoroutine(fadeRoutine5);
+            }
+
+            // Start fade baru
+            fadeRoutine5 = StartCoroutine(ActivateAndFadeOut(lockedPopup5, 2f));
+            return;
+        }
         selectedIndex = index;
-        
+
         // Update target icon
         if (index >= 0 && index < icons.Count && icons[index] != null)
             targetIcon = icons[index];
 
-        StopAllCoroutines();
+
+        if (animateRoutine != null)
+        {
+            StopCoroutine(animateRoutine);
+        }
         CameraController.Instance.MoveCameraSmooth(index + 1, 0.5f);
-        StartCoroutine(AnimateButtons());
+        animateRoutine = StartCoroutine(AnimateButtons());
     }
 
     IEnumerator AnimateButtons()
@@ -154,5 +186,39 @@ public class ButtonBarWithSilhouette : MonoBehaviour
         }
 
         ApplySizeInstant(selectedIndex);
+    }
+
+    public IEnumerator ActivateAndFadeOut(GameObject obj, float duration)
+    {
+        // --- Step 1: Aktifkan GameObject ---
+        obj.SetActive(true);
+        obj.transform.localScale = Vector3.one * 0.6f; // mulai dari 0.6
+        CanvasGroup cg = obj.GetComponent<CanvasGroup>();
+        if (cg == null) cg = obj.AddComponent<CanvasGroup>();
+
+        // --- Step 2: Scale up ---
+        float elapsed = 0f;
+        while (elapsed < 0.3f)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / 0.3f);
+            float scale = Mathf.Lerp(0.6f, 1f, t);
+            obj.transform.localScale = Vector3.one * scale;
+            yield return null;
+        }
+        obj.transform.localScale = Vector3.one; // pastikan scale = 1
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, elapsed / duration); // dari 1 ke 0
+            cg.alpha = alpha;
+            yield return null;
+        }
+
+        cg.alpha = 1;
+
+        // --- Step 3: Deactivate GameObject ---
+        obj.SetActive(false);
     }
 }

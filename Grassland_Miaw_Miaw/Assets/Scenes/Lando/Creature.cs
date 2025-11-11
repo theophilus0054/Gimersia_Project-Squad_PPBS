@@ -4,7 +4,7 @@ using System.Collections;
 public class Creature : MonoBehaviour, IDamageable
 {
     [Header("Creature Stats")]
-    public EvolutionData data;
+    public CreatureData data;
 
     [Header("Revive Settings")]
     public float reviveDelay = 10f;
@@ -30,7 +30,7 @@ public class Creature : MonoBehaviour, IDamageable
     // -------------------------
     // Damage & Death
     // -------------------------
-    public void TakeDamage(float amount)
+    public void TakeDamage(float amount, Effect status)
     {
         if (IsDead) return;
 

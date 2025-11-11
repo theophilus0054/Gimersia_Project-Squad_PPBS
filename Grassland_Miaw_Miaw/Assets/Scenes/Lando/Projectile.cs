@@ -1,17 +1,20 @@
+using System;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
     public float speed = 6f;
     public float damage = 10;
+    Effect projectileType;
     private Transform target;
 
     // dipanggil waktu peluru dibuat
-    public void Init(Transform targetTransform, int index)
+    public void Init(Transform targetTransform, int index, Effect type)
     {
         target = targetTransform;
         speed = EvolutionManager.Instance.GetEvolution(index).projectileSpeed;
         damage = EvolutionManager.Instance.GetEvolution(index).atk;
+        projectileType = type;
     }
 
     void Update()
@@ -36,7 +39,13 @@ public class Projectile : MonoBehaviour
             if (dmgComp != null)
             {
                 AudioManager.Instance.PlayBubble(gameObject.GetComponent<AudioSource>());
-                dmgComp.TakeDamage(damage);
+                if (projectileType == Effect.Slow)
+                {
+                    dmgComp.TakeDamage(damage, Effect.Slow);
+                } else
+                {
+                    dmgComp.TakeDamage(damage, Effect.None);
+                }
             }
 
             // hancurkan peluru setelah kena

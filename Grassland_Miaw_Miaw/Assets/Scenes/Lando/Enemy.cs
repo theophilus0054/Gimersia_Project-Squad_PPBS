@@ -32,6 +32,11 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private Coroutine flashRoutine;
 
+    // --- Slow Effect Variables ---
+    private float originalMoveSpeed;
+    private Coroutine slowCoroutine;
+    private bool isSlowed = false;
+
     void Awake()
     {
         // --- Data enemy ---
@@ -50,6 +55,9 @@ public class Enemy : MonoBehaviour, IDamageable
 
         // --- Material array ---
         originalMaterials = spriteRenderer.material;
+
+        // --- Store original speed ---
+        originalMoveSpeed = moveSpeed;
     }
 
     void Update()
@@ -71,10 +79,10 @@ public class Enemy : MonoBehaviour, IDamageable
     }
 
     // ============================================================
-    // 💥 DAMAGE + FLASH
+    // 💥 DAMAGE + FLASH + SLOW EFFECT
     // ============================================================
     bool once = false;
-    public void TakeDamage(float amount)
+    public void TakeDamage(float amount, Effect status)
     {
         if (IsDead) return;
 
@@ -84,6 +92,12 @@ public class Enemy : MonoBehaviour, IDamageable
         if (flashRoutine != null)
             StopCoroutine(flashRoutine);
         flashRoutine = StartCoroutine(FlashEffect());
+
+        // Apply slow effect jika status adalah Slow
+        if (status == Effect.Slow)
+        {
+            ApplySlowEffect(3f, 0.3f); // 5 detik, 30% slow
+        }
 
         if (hp <= 0 && !once)
         {
@@ -106,6 +120,66 @@ public class Enemy : MonoBehaviour, IDamageable
         }
     }
 
+    // ============================================================
+    // 🐌 SLOW EFFECT SYSTEM (NON-STACKABLE)
+    // ============================================================
+    public void ApplySlowEffect(float duration, float slowPercentage)
+    {
+        // Jika sudah dalam keadaan slowed, jangan apply slow baru
+        if (isSlowed)
+        {
+            Debug.Log($"[Slow] Enemy already slowed, ignoring new slow effect");
+            return;
+        }
+
+        // Start slow coroutine
+        if (slowCoroutine != null)
+            StopCoroutine(slowCoroutine);
+        
+        slowCoroutine = StartCoroutine(SlowRoutine(duration, slowPercentage));
+    }
+
+    private IEnumerator SlowRoutine(float duration, float slowPercentage)
+    {
+        isSlowed = true;
+        SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
+        sr.color = new Color(0.9f, 0.9f, 1f);
+        
+        // Apply slow
+        float slowMultiplier = 1f - slowPercentage;
+        moveSpeed = originalMoveSpeed * slowMultiplier;
+        
+        Debug.Log($"[Slow] Applied {slowPercentage * 100}% slow for {duration}s. Speed: {moveSpeed}");
+
+        // Tunggu sampai duration selesai
+        yield return new WaitForSeconds(duration);
+
+        // Remove slow effect
+        moveSpeed = originalMoveSpeed;
+        isSlowed = false;
+        slowCoroutine = null;
+        sr.color = Color.white;
+        
+        Debug.Log($"[Slow] Slow effect ended. Speed restored to: {moveSpeed}");
+    }
+
+    // Method untuk force remove slow effect (jika diperlukan)
+    public void RemoveSlowEffect()
+    {
+        if (slowCoroutine != null)
+        {
+            StopCoroutine(slowCoroutine);
+            slowCoroutine = null;
+        }
+        
+        moveSpeed = originalMoveSpeed;
+        isSlowed = false;
+        Debug.Log($"[Slow] Slow effect forcibly removed. Speed: {moveSpeed}");
+    }
+
+    // ============================================================
+    // ✨ FLASH EFFECT
+    // ============================================================
     private IEnumerator FlashEffect()
     {
         spriteRenderer.material = originalMaterials;
@@ -132,6 +206,15 @@ public class Enemy : MonoBehaviour, IDamageable
 
     public IEnumerator Die()
     {
+        // Hentikan semua effect ketika mati
+        if (slowCoroutine != null)
+        {
+            StopCoroutine(slowCoroutine);
+            slowCoroutine = null;
+        }
+        isSlowed = false;
+        moveSpeed = originalMoveSpeed;
+
         int duration = 1; // durasi fade out dalam detik
         float elapsed = 0f;
         Color originalColor = spriteRenderer.color;
@@ -145,5 +228,34 @@ public class Enemy : MonoBehaviour, IDamageable
         }
 
         Destroy(gameObject);
+    }
+
+    // ============================================================
+    // 🔧 PUBLIC METHODS FOR EXTERNAL ACCESS
+    // ============================================================
+    public bool IsCurrentlySlowed()
+    {
+        return isSlowed;
+    }
+
+    public float GetCurrentMoveSpeed()
+    {
+        return moveSpeed;
+    }
+
+    public float GetOriginalMoveSpeed()
+    {
+        return originalMoveSpeed;
+    }
+
+    void OnDisable()
+    {
+        // Cleanup coroutines ketika object dinonaktifkan
+        if (slowCoroutine != null)
+        {
+            StopCoroutine(slowCoroutine);
+            slowCoroutine = null;
+        }
+        isSlowed = false;
     }
 }

@@ -130,7 +130,7 @@ public class EnemyManager : MonoBehaviour
         GameObject enemyObj = Instantiate(data.prefab, spawnPos, Quaternion.identity, ObjectManager.Instance.enemySpawn.transform);
 
         enemyObj.name = $"{data.name}_Row{row}";
-        enemyObj.GetComponent<Enemy>().dropItemOnDeath = isSummon;
+        enemyObj.GetComponent<Enemy>().dropItemOnDeath = StageManager.Instance.isSummonPhase;
         enemyObj.GetComponent<Enemy>().getProgress = (StageManager.Instance.currentStage == GameManager.Instance.highestStage);
 
         Debug.Log($"👾 Spawned enemy '{data.name}' at Row {row}, Pos {spawnPos}");

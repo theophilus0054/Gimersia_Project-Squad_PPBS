@@ -215,7 +215,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            totalCoins = 0;
+            totalCoins = 10;
             highestStage = 1;
             gridLayout = new int[5, 6];
             unlockedIndex = new bool[100];
@@ -230,7 +230,7 @@ public class GameManager : MonoBehaviour
     // -------------------------
     public void ResetData()
     {
-        totalCoins = 0;
+        totalCoins = 10;
         highestStage = 1;
         gridLayout = new int[5, 6];
         unlockedIndex = new bool[100];

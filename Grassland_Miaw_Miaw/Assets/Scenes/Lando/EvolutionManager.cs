@@ -1,77 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[System.Serializable]
-public enum Effect
-{
-    None,
-    Burn,
-    Freeze,
-    Heal,
-    Poison,
-    Shield,
-    SpeedBoost
-}
-
-[System.Serializable]
-public class EvolutionData
-{
-    public int index;
-    public string name;          // ✅ added name
-    public int tier;             // ✅ added tier
-    public int[] possibleEvolutions;
-    public int baseCost;
-
-    public float hp;
-    public float atk;
-    public float atkSpeed;
-    public float projectileSpeed;
-    public int tileRange;
-    public Effect[] effects;
-
-    public GameObject prefab; // prefab reference
-
-    public EvolutionData(
-        int index,
-        string name,
-        int tier,
-        int[] possibleEvolutions,
-        int baseCost,
-        float hp,
-        float atk,
-        float atkSpeed,
-        float projectileSpeed,
-        int tileRange,
-        Effect[] effects,
-        GameObject prefab)
-    {
-        this.index = index;
-        this.name = name;
-        this.tier = tier;
-        this.possibleEvolutions = possibleEvolutions;
-        this.baseCost = baseCost;
-        this.hp = hp;
-        this.atk = atk;
-        this.atkSpeed = atkSpeed;
-        this.projectileSpeed = projectileSpeed;
-        this.tileRange = tileRange;
-        this.effects = effects;
-        this.prefab = prefab;
-    }
-
-    public override string ToString()
-    {
-        string evoList = possibleEvolutions.Length > 0 ? string.Join(", ", possibleEvolutions) : "None";
-        string effectList = effects.Length > 0 ? string.Join(", ", effects) : "None";
-        return $"[{index}] {name} (Tier {tier}) | Cost:{baseCost} | HP:{hp} ATK:{atk} SPD:{atkSpeed} ProjSPD : {projectileSpeed} Range:{tileRange} | Effects: {effectList} | Next: {evoList}";
-    }
-}
-
 public class EvolutionManager : MonoBehaviour
 {
     public static EvolutionManager Instance { get; private set; }
 
-    public List<EvolutionData> evolutions = new();
+    [Header("Evolution Database")]
+    public List<CreatureData> evolutions = new();
 
     [Header("Runtime References")]
     private GameObject currentInstance;
@@ -87,12 +22,7 @@ public class EvolutionManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    void Start()
-    {
-
-    }
-    
-    public EvolutionData GetEvolution(int index)
+    public CreatureData GetEvolution(int index)
     {
         if (index < 0 || index >= evolutions.Count)
         {
@@ -100,16 +30,6 @@ public class EvolutionManager : MonoBehaviour
             return null;
         }
         return evolutions[index];
-    }
-
-    public void SetEvolution(int index, EvolutionData newData)
-    {
-        if (index < 0 || index >= evolutions.Count)
-        {
-            Debug.LogWarning($"Index {index} out of range for evolutions list!");
-            return;
-        }
-        evolutions[index] = newData;
     }
 
     public void SpawnEvolution(int evolutionIndex)
@@ -123,22 +43,26 @@ public class EvolutionManager : MonoBehaviour
         if (currentInstance != null)
             Destroy(currentInstance);
 
-        EvolutionData data = evolutions[evolutionIndex];
+        CreatureData data = evolutions[evolutionIndex];
 
-        if (data.prefab != null)
+        if (data.summonPrefab != null)
         {
-            currentInstance = Instantiate(data.prefab, transform.position, Quaternion.identity, transform);
+            currentInstance = Instantiate(data.summonPrefab, transform.position, Quaternion.identity, transform);
         }
 
-        Debug.Log($"🌱 Spawned {data.name} (Tier {data.tier}) prefab: {data.prefab?.name}");
+        Debug.Log($"🌱 Spawned {data.creatureName} (Tier {data.tier}) prefab: {data.summonPrefab?.name}");
     }
 
-    public bool CanEvolveTo(int currentEvolution, int targetIndex)
+    public bool CanEvolveTo(int currentEvolutionIndex, int targetIndex)
     {
-        EvolutionData current = evolutions[currentEvolution];
-        foreach (int possible in current.possibleEvolutions)
+        if (currentEvolutionIndex < 0 || currentEvolutionIndex >= evolutions.Count)
+            return false;
+
+        CreatureData current = evolutions[currentEvolutionIndex];
+
+        foreach (var evo in current.possibleEvolutions)
         {
-            if (possible == targetIndex)
+            if (evo != null && evo.index == targetIndex)
                 return true;
         }
         return false;

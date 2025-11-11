@@ -37,7 +37,7 @@ public class EnemyProjectile : MonoBehaviour
         {
             hit = true;
             var dmgComp = other.GetComponent<IDamageable>();
-            if (dmgComp != null) dmgComp.TakeDamage(damage);
+            if (dmgComp != null) dmgComp.TakeDamage(damage, Effect.None);
             Invoke(nameof(DestroyProjectile), 0.5f);
         }
     }
