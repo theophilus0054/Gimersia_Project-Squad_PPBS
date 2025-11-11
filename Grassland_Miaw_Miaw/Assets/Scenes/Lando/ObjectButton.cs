@@ -32,12 +32,14 @@ public class ObjectButton : MonoBehaviour
 
     private void OnMouseDown()
     {
+        AudioManager.Instance.PlayButtonClick();
         onClick?.Invoke();
     }
 
     private void OnMouseEnter()
     {
         targetColor = originalColor * hoverDarkness; // darken
+        AudioManager.Instance.PlayButtonHover();
         onHoverEnter?.Invoke();
     }
 

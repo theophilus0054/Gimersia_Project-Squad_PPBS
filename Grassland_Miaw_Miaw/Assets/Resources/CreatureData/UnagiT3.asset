@@ -22,11 +22,11 @@ MonoBehaviour:
   cost: 300
   hp: 160
   atk: 45
-  atkSpeed: 3
+  atkSpeed: 2
   projectileSpeed: 6
   tileRange: 6
   possibleEvolutions: []
   tier: 3
-  effects: []
+  effectsArray: []
   summonPrefab: {fileID: 5847998885843973870, guid: 1d8b79327181c03449a73f82dcb1cfba, type: 3}
   displayPrefab: {fileID: 5847998885843973870, guid: 4a1a362229571bb49b91c202c39ee6f1, type: 3}

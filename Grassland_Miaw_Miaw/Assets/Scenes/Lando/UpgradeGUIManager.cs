@@ -133,11 +133,11 @@ public class UpgradeGUIManager : MonoBehaviour
                     CreatureData creature = SummonGUIManager.Instance.allCreatures[i];
                     if (creature.type == CreatureType.Unagi)
                     {
-                        // Tambahkan efek Slow
-                        // Pastikan effects menggunakan List supaya bisa Add
-                        List<EffectData> effectList = new List<EffectData>(creature.effects ?? new EffectData[0]);
-                        effectList.Add(new EffectData { effectType = Effect.Slow, chanceToApply = 10f });
-                        creature.effects = effectList.ToArray();
+                        // Tambahkan efek Slow menggunakan AddEffect
+                        creature.AddEffect(new EffectData { effectType = Effect.Slow, chanceToApply = 10f });
+                        
+                        // Sinkronkan ke array untuk Inspector (opsional, tergantung kebutuhan)
+                        creature.SyncEffectsToArray();
                     }
                 }
                 break;

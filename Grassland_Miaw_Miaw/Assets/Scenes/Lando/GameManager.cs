@@ -63,6 +63,7 @@ public class GameManager : MonoBehaviour
     {
         if (totalCoins >= amount)
         {
+            AudioManager.Instance.PlayBuyInteraction();
             totalCoins -= amount;
             UIManager.Instance.coinText.text = totalCoins.ToString();
             SaveData();
@@ -215,13 +216,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            totalCoins = 10;
-            highestStage = 1;
-            gridLayout = new int[5, 6];
-            unlockedIndex = new bool[100];
-            unlockedIndex[0] = true;
-            currentProgress = 0;
-            targetProgress = 0;
+            ResetData();
         }
     }
 
@@ -238,6 +233,26 @@ public class GameManager : MonoBehaviour
         targetProgress = StageManager.Instance.stageSummons[0].stageTargetProgress;
         unlockedIndex = new bool[100];
         unlockedIndex[0] = true;
+        
+        // Reset semua effects di creatures
+        foreach(CreatureData creature in SummonGUIManager.Instance.allCreatures)
+        {
+            if (creature != null)
+            {
+                creature.Effects.Clear(); // Clear HashSet
+                creature.SyncEffectsToArray(); // Sync ke array
+            }
+        }
+        
+        // Reset semua upgrades
+        foreach(UpgradeData upgrade in UpgradeGUIManager.Instance.allUpgrades)
+        {
+            if (upgrade != null)
+            {
+                upgrade.isPurchased = false;
+            }
+        }
+        
         SaveData();
     }
 }

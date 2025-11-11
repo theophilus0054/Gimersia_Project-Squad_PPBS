@@ -63,6 +63,7 @@ public class DragScript : MonoBehaviour
             // Kalau ketemu collider ini, mulai drag
             if (hit == col)
             {
+                AudioManager.Instance.PlayPickupCreature();
                 startDragPosition = transform.position;
                 isDragging = true;
                 Debug.Log($"✅ Started dragging {name}");
@@ -95,6 +96,7 @@ public class DragScript : MonoBehaviour
                 Debug.Log($"Found DropArea: {hit.name}, assigning dropArea");
                 dropArea = area;
                 dropAreaCollider = hit;
+                AudioManager.Instance.PlayDropCreature();
                 break;
             }
         }
@@ -188,6 +190,7 @@ public class DragScript : MonoBehaviour
                     Destroy(other.gameObject);
                     Destroy(this.gameObject);
 
+                    AudioManager.Instance.PlayMergeCreature();
                     SummonManager.SummonEvolution(nextEvolution, (DropArea)dropArea);
                     merged = true;
                     break;

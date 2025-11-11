@@ -117,21 +117,37 @@ public class SummonGUIManager : MonoBehaviour
         CheckCost();
     }
 
-    private void CheckCost()
+    private bool CheckCost()
     {
-        if (summonCollider == null || summonButton == null) return;
-        if (currentCreature == null) return;
+        if (summonCollider == null || summonButton == null)  return false;
+        if (currentCreature == null) return false;
 
         bool cukup = GameManager.Instance.totalCoins >= currentCreature.cost;
 
-        summonCollider.enabled = cukup;
         summonButton.color = cukup
             ? Color.white
             : new Color(0.937f, 0.824f, 0.808f, 1f);
+
+        return cukup;
     }
 
     public void consumeCoins()
     {
+        if (!CheckCost())
+        {
+            GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
+            obj.GetComponentInChildren<TextMeshProUGUI>().text = "Not Enough Seashell";
+            Debug.LogWarning($"No empty DropArea found to summon evolution.");
+            return;
+        }
+        DropArea target = SummonManager.Instance.FindNextEmptyDropArea();
+        if (target == null)
+        {
+            GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
+            obj.GetComponentInChildren<TextMeshProUGUI>().text = "Your base is full";
+            Debug.LogWarning($"No empty DropArea found to summon evolution.");
+            return;
+        }
         if (currentCreature != null)
         {
             GameManager.Instance.SpendCoins(currentCreature.cost);

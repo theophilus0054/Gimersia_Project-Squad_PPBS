@@ -579,19 +579,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 017816c890f6be74492038a37f1cbe67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Creature
-  data:
-    index: 0
-    name: 
-    tier: 0
-    possibleEvolutions: 
-    baseCost: 0
-    hp: 0
-    atk: 0
-    atkSpeed: 0
-    projectileSpeed: 0
-    tileRange: 0
-    effects: 
-    prefab: {fileID: 0}
+  data: {fileID: 11400000, guid: 67f59fc270d108340bab99e34670417a, type: 2}
   reviveDelay: 10
 --- !u!82 &7938004045687277958
 AudioSource:

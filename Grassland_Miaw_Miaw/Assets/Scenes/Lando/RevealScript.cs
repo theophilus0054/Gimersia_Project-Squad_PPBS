@@ -2,9 +2,9 @@ using UnityEngine;
 using System;
 using System.Collections;
 
-public class AnimationScript : MonoBehaviour
+public class RevealScript : MonoBehaviour
 {
-    private static AnimationScript instance;
+    public static RevealScript Instance { get; private set; }
     private static Camera cam;
 
     [Header("Reveal Settings")]
@@ -15,11 +15,6 @@ public class AnimationScript : MonoBehaviour
     public float shakeAngle = 10f;
     public float animationZOffset = -5f;
     public GameObject whiteLightPrefab;
-
-    [Header("Slide Settings")]
-    public float slideDuration = 1.5f;
-    public float cooldownDuration = 3f;
-    public float xOffset = 5f;
 
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
@@ -34,9 +29,9 @@ public class AnimationScript : MonoBehaviour
     // ===================================================
     private void Awake()
     {
-        if (instance == null)
+        if (Instance == null)
         {
-            instance = this;
+            Instance = this;
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -45,15 +40,8 @@ public class AnimationScript : MonoBehaviour
         }
     }
 
-    private static void EnsureManager()
+    private void EnsureManager()
     {
-        if (instance == null)
-        {
-            GameObject mgr = new GameObject("AnimationScriptManager");
-            instance = mgr.AddComponent<AnimationScript>();
-            DontDestroyOnLoad(mgr);
-        }
-
         if (cam == null)
             cam = Camera.main;
     }
@@ -61,16 +49,10 @@ public class AnimationScript : MonoBehaviour
     // ===================================================
     // 🎬 STATIC ENTRY POINTS
     // ===================================================
-    public static void RevealPlay(GameObject targetObj, Action onComplete = null)
+    public void RevealPlay(GameObject targetObj, Action onComplete = null)
     {
         EnsureManager();
-        instance.StartCoroutine(instance.RevealSequence(targetObj, onComplete));
-    }
-
-    public static void SlidePlay(GameObject targetObj, float distance = 5f, float duration = 2f, bool easeOutExit = true, Action onComplete = null)
-    {
-        EnsureManager();
-        instance.StartCoroutine(instance.SlideSequence(targetObj, distance, duration, easeOutExit, onComplete));
+        StartCoroutine(RevealSequence(targetObj, onComplete));
     }
 
     // ===================================================
@@ -149,6 +131,7 @@ public class AnimationScript : MonoBehaviour
             whiteLightPrefab.SetActive(true);
             lightSprite = whiteLightPrefab.GetComponent<SpriteRenderer>();
         }
+        AudioManager.Instance.PlayUnlockNewCreature();
 
         if (lightSprite != null)
         {
@@ -234,67 +217,5 @@ public class AnimationScript : MonoBehaviour
 
         target.transform.position = originalPos;
         target.transform.localScale = originalScale;
-    }
-
-    // ===================================================
-    // 🎞️ SLIDE ANIMATION
-    // ===================================================
-
-    private IEnumerator SlideSequence(GameObject targetObj, float distance, float duration, bool easeOutExit, Action onComplete)
-    {
-        target = targetObj;
-        Vector3 start = target.transform.position;
-        Vector3 middle = target.transform.position - Vector3.right * distance;
-        Vector3 end = target.transform.position - (Vector3.right * distance * 2f);
-
-        // Geser kanan → tengah (cepat → lambat)
-        float t = 0f;
-        while (t < duration / 2f)
-        {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0, 1, t / (duration / 2f));
-            target.transform.position = Vector3.Lerp(start, middle, progress);
-            yield return null;
-        }
-
-        yield return new WaitForSeconds(1f); // cooldown di tengah
-
-        // Tengah → kiri (pilihan gaya easing)
-        t = 0f;
-        while (t < duration / 2f)
-        {
-            t += Time.deltaTime;
-
-            float progress;
-            if (easeOutExit)
-                progress = Mathf.SmoothStep(0, 1, t / (duration / 2f)); // cepat → lambat
-            else
-                progress = Mathf.Pow(t / (duration / 2f), 2f); // lambat → cepat (dramatis)
-
-            target.transform.position = Vector3.Lerp(middle, end, progress);
-            yield return null;
-        }
-
-        target.transform.position = end;
-        target.transform.position = start;
-        if(target.name == "WaveFailedFrame")
-        {
-            UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
-        }
-        onComplete?.Invoke();
-    }
-
-
-    private IEnumerator MoveObject(GameObject obj, Vector3 from, Vector3 to, float duration)
-    {
-        float t = 0f;
-        while (t < duration)
-        {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0, 1, t / duration);
-            obj.transform.position = Vector3.Lerp(from, to, progress);
-            yield return null;
-        }
-        obj.transform.position = to;
     }
 }

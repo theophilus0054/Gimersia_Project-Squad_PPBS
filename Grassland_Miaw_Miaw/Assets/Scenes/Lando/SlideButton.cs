@@ -28,7 +28,7 @@ public class SlideButton : MonoBehaviour
     }
 
     void OnMouseDown()
-    {
+    {   AudioManager.Instance.PlayDropCreature();
         // ✅ Cek apakah tombol sudah di posisi aktif sebelum bisa diklik
         if (IsAtActivePosition())
         {

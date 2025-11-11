@@ -6,7 +6,7 @@
         [Header("Attack Settings")]
         public GameObject projectilePrefab;
         public Transform fireOrigin;
-        public float fireRate = 5f;
+        public float fireDelay = 5f;
 
         [HideInInspector] public List<Transform> enemiesInRange = new List<Transform>();
 
@@ -40,7 +40,7 @@
             return;
         }
 
-        var evoData = EvolutionManager.Instance.GetEvolution(evoIndex);
+        CreatureData evoData = EvolutionManager.Instance.GetEvolution(evoIndex);
         if (evoData == null)
         {
             Debug.LogError($"Evolution data for index {evoIndex} not found!");
@@ -48,7 +48,7 @@
             return;
         }
 
-        fireRate = evoData.atkSpeed;
+        fireDelay = evoData.atkSpeed;
     }
         
 
@@ -62,7 +62,7 @@
             if (!targetDetected)
             {
                 targetDetected = true;
-                fireCooldown = 1f / fireRate; // delay pertama sebelum menyerang
+                fireCooldown = fireDelay; // delay pertama sebelum menyerang
             }
 
             fireCooldown -= Time.deltaTime;
@@ -71,7 +71,7 @@
             {
                 Debug.Log($"{name}: Anjay nembak {target.name}");
                 FireAt(target);
-                fireCooldown = 1f / fireRate; // reset cooldown setelah menyerang
+                fireCooldown = fireDelay; // reset cooldown setelah menyerang
             }
         }
         else
@@ -139,7 +139,7 @@
         if (p != null)
         {
             int evoIndex = GetComponent<DragScript>().evolutionIndex;
-            if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effects) == Effect.Slow)
+            if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.Slow)
             {
                 p.Init(target, evoIndex, Effect.Slow);
             } else

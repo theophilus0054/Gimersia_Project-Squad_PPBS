@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
 using UnityEditor.SceneManagement;
 
 public class UIManager : MonoBehaviour
@@ -20,6 +21,12 @@ public class UIManager : MonoBehaviour
     [Header("Stage Info")]
     public TextMeshPro stageText;
     public TextMeshProUGUI coinText;
+
+    [Header("Popup")]
+    public GameObject popupWarningSlot;
+    public GameObject popupWarningPrefab;
+    public GameObject popupFeatureIndex;
+
 
     private void Awake()
     {
@@ -84,10 +91,55 @@ public class UIManager : MonoBehaviour
 
     public void OnClickStageNext()
     {
-        if(StageManager.Instance.currentStage < GameManager.Instance.highestStage && StageManager.Instance.isSummonPhase)
-        { 
-            UpdateStageText(StageManager.Instance.currentStage+1);
+        if (StageManager.Instance.currentStage < GameManager.Instance.highestStage && StageManager.Instance.isSummonPhase)
+        {
+            UpdateStageText(StageManager.Instance.currentStage + 1);
             StageManager.Instance.NextStage();
         }
+    }
+
+    Coroutine indexRoutine;
+    public void openIndex()
+    {
+        if (indexRoutine != null)
+        {
+            StopCoroutine(indexRoutine);
+        }
+        AudioManager.Instance.PlayDeniedInteraction();
+        indexRoutine = StartCoroutine(ActivateAndFadeOut(1f));
+    }
+    
+    public IEnumerator ActivateAndFadeOut(float duration)
+    {
+        // --- Step 1: Aktifkan GameObject ---
+        popupFeatureIndex.SetActive(true);
+        popupFeatureIndex.transform.localScale = Vector3.one * 0.9f;
+        CanvasGroup cg = popupFeatureIndex.GetComponent<CanvasGroup>();
+        if (cg == null) cg = popupFeatureIndex.AddComponent<CanvasGroup>();
+
+        // --- Step 2: Scale up ---
+        float elapsed = 0f;
+        while (elapsed < 0.1f)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / 0.1f);
+            float scale = Mathf.Lerp(0.9f, 1f, t);
+            popupFeatureIndex.transform.localScale = Vector3.one * scale;
+            yield return null;
+        }
+        popupFeatureIndex.transform.localScale = Vector3.one; // pastikan scale = 1
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, elapsed / duration); // dari 1 ke 0
+            cg.alpha = alpha;
+            yield return null;
+        }
+
+        cg.alpha = 1;
+
+        // --- Step 3: Deactivate GameObject ---
+        popupFeatureIndex.SetActive(false);
     }
 }

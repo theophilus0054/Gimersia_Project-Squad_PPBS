@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 public class SummonManager : MonoBehaviour
@@ -28,6 +29,8 @@ public class SummonManager : MonoBehaviour
         DropArea target = Instance.FindNextEmptyDropArea();
         if (target == null)
         {
+            GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
+            obj.GetComponentInChildren<TextMeshProUGUI>().text = "Your base is full";
             Debug.LogWarning($"No empty DropArea found to summon evolution {evolutionIndex}.");
         }
         SummonEvolution(evolutionIndex, target);
@@ -43,6 +46,8 @@ public class SummonManager : MonoBehaviour
         DropArea target = Instance.FindDropAreaByPosition(row, col);
         if (target == null)
         {
+            GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
+            obj.GetComponentInChildren<TextMeshProUGUI>().text = "Your base is full";
             Debug.LogWarning($"DropArea at position ({row},{col}) not found for summoning evolution {evolutionIndex}.");
         }
         SummonEvolution(evolutionIndex, target, saveToGrid);
@@ -77,6 +82,7 @@ public class SummonManager : MonoBehaviour
             return;
         }
 
+        AudioManager.Instance.PlayDropCreature();
         GameObject newObj = Instantiate(evoData.summonPrefab, target.transform.position, Quaternion.identity, ObjectManager.Instance.creatureSpawn.transform);
         DragScript drag = newObj.GetComponent<DragScript>();
         drag.enabled = false;
@@ -89,7 +95,7 @@ public class SummonManager : MonoBehaviour
                 drag.enabled = false;
                 GameManager.Instance.UnlockIndex(evolutionIndex);
                 // 🔁 Jalankan animasi, lalu aktifkan kembali drag
-                AnimationScript.RevealPlay(newObj, () =>
+                RevealScript.Instance.RevealPlay(newObj, () =>
                 {
                     drag.enabled = true;
                     Debug.Log($"{newObj.name} animasi selesai, DragScript diaktifkan kembali.");
@@ -133,7 +139,7 @@ public class SummonManager : MonoBehaviour
     // -------------------------
     // Find DropArea helpers
     // -------------------------
-    private DropArea FindNextEmptyDropArea()
+    public DropArea FindNextEmptyDropArea()
     {
         if (dropAreaParent == null)
         {

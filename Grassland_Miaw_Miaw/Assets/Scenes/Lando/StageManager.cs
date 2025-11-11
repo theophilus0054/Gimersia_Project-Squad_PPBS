@@ -179,7 +179,7 @@ public class StageManager : MonoBehaviour
 
     public void FailedWave()
     {
-        AnimationScript.SlidePlay(UIManager.Instance.waveFailedFrame, 15f, 1f, false);
+        SlideStageScript.Instance.SlidePlay(UIManager.Instance.waveFailedFrame, 15f, 1f, false);
         Debug.Log("💀 Wave Failed! Returning to summon phase...");
 
         // Stop current wave coroutine
@@ -254,7 +254,7 @@ public class StageManager : MonoBehaviour
     public void OnWaveComplete()
     {
         UIManager.Instance.WaveSurrenderPanel.GetComponent<SurrenderScript>().StopWave(false);
-        AnimationScript.SlidePlay(UIManager.Instance.waveFinishedFrame, 15f, 1f, false);
+        SlideStageScript.Instance.SlidePlay(UIManager.Instance.waveFinishedFrame, 15f, 1f, false);
         Debug.Log($"🏆 Stage {currentStage} cleared!");
         NextStage();
     }

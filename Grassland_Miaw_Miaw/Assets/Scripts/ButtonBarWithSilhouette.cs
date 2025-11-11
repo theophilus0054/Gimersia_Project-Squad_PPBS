@@ -103,6 +103,7 @@ public class ButtonBarWithSilhouette : MonoBehaviour
     private Coroutine animateRoutine;
     public void OnButtonClicked(int index)
     {
+        AudioManager.Instance.PlayButtonClick();
         if (index == 0)
         {
             if (fadeRoutine1 != null)
@@ -111,6 +112,7 @@ public class ButtonBarWithSilhouette : MonoBehaviour
             }
 
             // Start fade baru
+            AudioManager.Instance.PlayDeniedInteraction();
             fadeRoutine1 = StartCoroutine(ActivateAndFadeOut(lockedPopup1, 2f));
             return;
         }
@@ -122,6 +124,7 @@ public class ButtonBarWithSilhouette : MonoBehaviour
             }
 
             // Start fade baru
+            AudioManager.Instance.PlayDeniedInteraction();
             fadeRoutine5 = StartCoroutine(ActivateAndFadeOut(lockedPopup5, 2f));
             return;
         }
@@ -192,17 +195,17 @@ public class ButtonBarWithSilhouette : MonoBehaviour
     {
         // --- Step 1: Aktifkan GameObject ---
         obj.SetActive(true);
-        obj.transform.localScale = Vector3.one * 0.6f; // mulai dari 0.6
+        obj.transform.localScale = Vector3.one * 0.9f;
         CanvasGroup cg = obj.GetComponent<CanvasGroup>();
         if (cg == null) cg = obj.AddComponent<CanvasGroup>();
 
         // --- Step 2: Scale up ---
         float elapsed = 0f;
-        while (elapsed < 0.3f)
+        while (elapsed < 0.1f)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / 0.3f);
-            float scale = Mathf.Lerp(0.6f, 1f, t);
+            float t = Mathf.Clamp01(elapsed / 0.1f);
+            float scale = Mathf.Lerp(0.9f, 1f, t);
             obj.transform.localScale = Vector3.one * scale;
             yield return null;
         }
