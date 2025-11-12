@@ -1,7 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using UnityEditor.SceneManagement;
-using System.Security.Cryptography;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
