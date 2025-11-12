@@ -103,6 +103,15 @@ public class UpgradeGUIManager : MonoBehaviour
         if (UpgradeCollider == null || UpgradeButton == null) return;
         if (currentUpgrade == null) return;
 
+        // Cek apakah upgrade sudah dibeli
+        if (currentUpgrade.isPurchased)
+        {
+            UpgradeCollider.enabled = false;
+            UpgradeButton.color = new Color(0.5f, 0.5f, 0.5f, 1f); // abu-abu
+            if (costText) costText.text = "Purchased";
+            return;
+        }
+
         bool cukup = GameManager.Instance.totalCoins >= currentUpgrade.cost;
 
         UpgradeCollider.enabled = cukup;
