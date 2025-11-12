@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 [System.Serializable]
 public class GameData
@@ -10,6 +12,12 @@ public class GameData
     public bool[] unlockedIndex; // setiap index evolution: true = unlocked, false = locked
     public int currentProgress;
     public int targetProgress;
+    public int[] purchasedUpgrade; // index upgrade yang sudah dibeli
+
+    // Dictionary gak bisa langsung diserialisasi oleh JsonUtility
+    // Jadi kita skip dulu bagian ini dan handle manual nanti kalau butuh
+    public List<int> creaturePurchaseKeys = new List<int>();
+    public List<int> creaturePurchaseValues = new List<int>();
 }
 
 public class GameManager : MonoBehaviour
@@ -25,6 +33,9 @@ public class GameManager : MonoBehaviour
     public int currentProgress { get; private set; }
     public int targetProgress { get; private set; }
 
+    // Dictionary untuk menyimpan jumlah pembelian tiap creature
+    public Dictionary<int, int> creaturePurchaseCount = new Dictionary<int, int>();
+
     private string savePath;
 
     private void Awake()
@@ -38,13 +49,13 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         savePath = Application.persistentDataPath + "/gamedata.json";
-        ResetData();
         LoadData();
     }
 
     void Start()
     {
-        LoadGrid(); // summon semua creature sesuai JSON saat start
+        ResetData();
+        LoadGrid();
         UIManager.Instance.coinText.text = totalCoins.ToString();
     }
 
@@ -54,7 +65,6 @@ public class GameManager : MonoBehaviour
     public void AddCoins(int amount)
     {
         totalCoins += amount;
-        Debug.Log($"Added {amount} coins. Total now: {totalCoins}");
         UIManager.Instance.coinText.text = totalCoins.ToString();
         SaveData();
     }
@@ -87,21 +97,14 @@ public class GameManager : MonoBehaviour
     public void addStageProgress(int current)
     {
         currentProgress += current;
-        Debug.Log($"Stage Progress Updated: {currentProgress}/{targetProgress}");
         SaveData();
     }
 
-
     public void SetStageProgress(int current, int target, bool force)
     {
-        // Cek apakah progress sudah ada
         if (currentProgress != 0 && targetProgress != 0 && !force)
-        {
-            Debug.LogWarning($"Stage progress sudah ada (Current: {currentProgress}, Target: {targetProgress}). Tidak menimpa data lama.");
-            return; // jangan overwrite
-        }
+            return;
 
-        // Pastikan current <= target dan target minimal 1
         currentProgress = Mathf.Clamp(current, 0, target);
         targetProgress = Mathf.Max(target, 1);
 
@@ -141,9 +144,9 @@ public class GameManager : MonoBehaviour
             for (int col = 0; col < 6; col++)
             {
                 int creatureID = gridLayout[row, col];
-                if (creatureID > 0) // 0 = kosong
+                if (creatureID > 0)
                 {
-                    SummonManager.SummonEvolution(creatureID, row, col, false); // false = jangan simpan lagi
+                    SummonManager.SummonEvolution(creatureID, row, col, false);
                 }
             }
         }
@@ -163,7 +166,7 @@ public class GameManager : MonoBehaviour
     public void UnlockIndex(int index)
     {
         if (unlockedIndex == null)
-            unlockedIndex = new bool[100]; // ganti 100 sesuai jumlah evolusi
+            unlockedIndex = new bool[100];
 
         if (index >= 0 && index < unlockedIndex.Length)
         {
@@ -184,7 +187,14 @@ public class GameManager : MonoBehaviour
             gridLayout = gridLayout,
             unlockedIndex = unlockedIndex,
             currentProgress = currentProgress,
-            targetProgress = targetProgress
+            targetProgress = targetProgress,
+            purchasedUpgrade = UpgradeGUIManager.Instance.allUpgrades
+                .Select((u, i) => u.isPurchased ? i : -1)
+                .Where(i => i != -1)
+                .ToArray(),
+
+            creaturePurchaseKeys = creaturePurchaseCount.Keys.ToList(),
+            creaturePurchaseValues = creaturePurchaseCount.Values.ToList()
         };
 
         string json = JsonUtility.ToJson(data, true);
@@ -206,13 +216,29 @@ public class GameManager : MonoBehaviour
             else
                 gridLayout = new int[5, 6];
 
-            if (data.unlockedIndex != null)
-                unlockedIndex = data.unlockedIndex;
-            else
-                unlockedIndex = new bool[100];
+            unlockedIndex = data.unlockedIndex ?? new bool[100];
 
             currentProgress = data.currentProgress;
             targetProgress = data.targetProgress;
+
+            // --- Rebuild Dictionary ---
+            creaturePurchaseCount.Clear();
+            for (int i = 0; i < data.creaturePurchaseKeys.Count; i++)
+            {
+                creaturePurchaseCount[data.creaturePurchaseKeys[i]] = data.creaturePurchaseValues[i];
+            }
+
+            // --- Restore purchased upgrades ---
+            if (data.purchasedUpgrade != null && UpgradeGUIManager.Instance != null)
+            {
+                foreach (int index in data.purchasedUpgrade)
+                {
+                    if (index >= 0 && index < UpgradeGUIManager.Instance.allUpgrades.Length)
+                    {
+                        UpgradeGUIManager.Instance.allUpgrades[index].isPurchased = true;
+                    }
+                }
+            }
         }
         else
         {
@@ -231,28 +257,25 @@ public class GameManager : MonoBehaviour
         unlockedIndex = new bool[100];
         currentProgress = 0;
         targetProgress = StageManager.Instance.stageSummons[0].stageTargetProgress;
-        unlockedIndex = new bool[100];
         unlockedIndex[0] = true;
-        
-        // Reset semua effects di creatures
-        foreach(CreatureData creature in SummonGUIManager.Instance.allCreatures)
+
+        creaturePurchaseCount.Clear();
+
+        foreach (CreatureData creature in SummonGUIManager.Instance.allCreatures)
         {
             if (creature != null)
             {
-                creature.Effects.Clear(); // Clear HashSet
-                creature.SyncEffectsToArray(); // Sync ke array
+                creature.Effects.Clear();
+                creature.SyncEffectsToArray();
             }
         }
-        
-        // Reset semua upgrades
-        foreach(UpgradeData upgrade in UpgradeGUIManager.Instance.allUpgrades)
+
+        foreach (UpgradeData upgrade in UpgradeGUIManager.Instance.allUpgrades)
         {
             if (upgrade != null)
-            {
                 upgrade.isPurchased = false;
-            }
         }
-        
+
         SaveData();
     }
 }

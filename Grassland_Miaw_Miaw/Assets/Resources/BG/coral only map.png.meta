@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: e771f30cccff0594d86048cd2002f26b
+guid: 12e5594a95e1cae4e83aa5ce7dc77c88
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4804446361586417100
-    second: map_0
+      213: 3333438205141144746
+    second: coral only map_0
+  - first:
+      213: 534589810163475258
+    second: coral only map_1
+  - first:
+      213: -8159618976930013921
+    second: coral only map_2
+  - first:
+      213: 1052161531684948182
+    second: coral only map_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +109,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: map_0
+      name: coral only map_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 958
-        height: 540
+        y: 360
+        width: 1920
+        height: 720
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +124,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ccdb6c4c282dca240800000000000000
-      internalID: 4804446361586417100
+      spriteID: aa45722e260c24e20800000000000000
+      internalID: 3333438205141144746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coral only map_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 610
+        height: 385
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a336657999e3b6700800000000000000
+      internalID: 534589810163475258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coral only map_2
+      rect:
+        serializedVersion: 2
+        x: 603
+        y: 0
+        width: 65
+        height: 159
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1ddc81a5c533ce80800000000000000
+      internalID: -8159618976930013921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coral only map_3
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 0
+        width: 1261
+        height: 307
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d88966a6570a9e00800000000000000
+      internalID: 1052161531684948182
       vertices: []
       indices: 
       edges: []
@@ -135,7 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      map_0: 4804446361586417100
+      coral only map_0: 3333438205141144746
+      coral only map_1: 534589810163475258
+      coral only map_2: -8159618976930013921
+      coral only map_3: 1052161531684948182
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

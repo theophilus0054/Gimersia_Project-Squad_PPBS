@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e771f30cccff0594d86048cd2002f26b
+guid: 32549f99618c4624bad40e1848d8ac94
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4804446361586417100
-    second: map_0
+      213: 7662708163221405901
+    second: lines-vertikal-2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: map_0
+      name: lines-vertikal-2_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 958
-        height: 540
+        x: 435
+        y: 52
+        width: 29
+        height: 932
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ccdb6c4c282dca240800000000000000
-      internalID: 4804446361586417100
+      spriteID: dc04c46c978675a60800000000000000
+      internalID: 7662708163221405901
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      map_0: 4804446361586417100
+      lines-vertikal-2_0: 7662708163221405901
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

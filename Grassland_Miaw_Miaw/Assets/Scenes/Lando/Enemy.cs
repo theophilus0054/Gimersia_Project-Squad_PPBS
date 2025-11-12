@@ -104,12 +104,12 @@ public class Enemy : MonoBehaviour, IDamageable
             once = true;
             if (dropItemOnDeath)
             {
-                if(getProgress)
+                if (getProgress)
                 {
                     GameManager.Instance.addStageProgress(pointProgression);
                     StageManager.Instance.UpdateTargetAchieved();
                 }
-                GameManager.Instance.AddCoins(Random.Range(baseCoin, Mathf.RoundToInt(baseCoin * 1.3f)));
+                ObjectManager.Instance.SummonCoin(gameObject, Random.Range(baseCoin, Mathf.RoundToInt(baseCoin * 1.3f)));
             }
             GetComponent<Animator>()?.SetTrigger("isDead");
             AudioManager.Instance.PlayEnemyDead(gameObject.GetComponent<AudioSource>());

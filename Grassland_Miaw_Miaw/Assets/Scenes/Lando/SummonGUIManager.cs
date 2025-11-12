@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
 
 public class SummonGUIManager : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class SummonGUIManager : MonoBehaviour
     public TextMeshPro descText;
     public TextMeshPro costText;
     public TextMeshPro currentText;
-    public Transform prefabCreatureDisplay; // ubah ke Transform, biar posisinya jelas
+    public Transform prefabCreatureDisplay;
 
     [Header("Coin & Button")]
     public Collider2D summonCollider;
@@ -24,8 +25,10 @@ public class SummonGUIManager : MonoBehaviour
     [Header("Current Creature")]
     public int currentIndex = 0;
     private CreatureData currentCreature;
+    private GameObject currentPreviewInstance;
 
-    private GameObject currentPreviewInstance; // simpan instance dari prefab preview
+    // 🔹 Tambahan: catat jumlah pembelian tiap creature
+    private Dictionary<int, int> creaturePurchaseCount = new Dictionary<int, int>();
 
     private void Awake()
     {
@@ -34,15 +37,12 @@ public class SummonGUIManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
     }
 
     void Start()
     {
         ClearAllText();
-        // bisa aktifin kalau mau langsung tampil:
-        // ShowCreatureByIndex(currentIndex);
     }
 
     void Update()
@@ -60,7 +60,6 @@ public class SummonGUIManager : MonoBehaviour
         if (currentText) currentText.text = "";
         if (descriptionPanel) descriptionPanel.SetActive(false);
 
-        // Hapus preview creature kalau ada
         if (currentPreviewInstance)
             Destroy(currentPreviewInstance);
     }
@@ -87,30 +86,27 @@ public class SummonGUIManager : MonoBehaviour
 
         currentCreature = creature;
 
-        // 🔹 Tampilkan UI
         descriptionPanel.SetActive(true);
         if (nameText) nameText.text = creature.creatureName;
         if (statsText) statsText.text = $"Range: {creature.range} | Damage: {creature.damage}";
         if (descText) descText.text = creature.description;
-        if (costText) costText.text = $"Cost: {creature.cost}";
+
+        // 🔹 Tampilkan harga yang dinamis
+        if (costText) costText.text = $"Cost: {GetCurrentCost(creature)}";
+
         if (currentText)
             currentText.text = creature.type == CreatureType.Unagi ? $"T{creature.index + 1}" : "";
 
-        // 🔹 Spawn preview prefab di posisi display
         if (prefabCreatureDisplay && creature.displayPrefab)
         {
-            // hapus preview lama
             if (currentPreviewInstance)
                 Destroy(currentPreviewInstance);
 
-            // instantiate prefab baru
             currentPreviewInstance = Instantiate(
                 creature.displayPrefab,
                 prefabCreatureDisplay.position,
                 Quaternion.identity
             );
-
-            // optional: jadikan child dari display supaya rapi
             currentPreviewInstance.transform.SetParent(prefabCreatureDisplay);
         }
 
@@ -119,10 +115,11 @@ public class SummonGUIManager : MonoBehaviour
 
     private bool CheckCost()
     {
-        if (summonCollider == null || summonButton == null)  return false;
+        if (summonCollider == null || summonButton == null) return false;
         if (currentCreature == null) return false;
 
-        bool cukup = GameManager.Instance.totalCoins >= currentCreature.cost;
+        int currentCost = GetCurrentCost(currentCreature);
+        bool cukup = GameManager.Instance.totalCoins >= currentCost;
 
         summonButton.color = cukup
             ? Color.white
@@ -137,24 +134,48 @@ public class SummonGUIManager : MonoBehaviour
         {
             GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
             obj.GetComponentInChildren<TextMeshProUGUI>().text = "Not Enough Seashell";
-            Debug.LogWarning($"No empty DropArea found to summon evolution.");
             return;
         }
+
         DropArea target = SummonManager.Instance.FindNextEmptyDropArea();
         if (target == null)
         {
             GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
             obj.GetComponentInChildren<TextMeshProUGUI>().text = "Your base is full";
-            Debug.LogWarning($"No empty DropArea found to summon evolution.");
             return;
         }
+
         if (currentCreature != null)
         {
-            GameManager.Instance.SpendCoins(currentCreature.cost);
+            int cost = GetCurrentCost(currentCreature);
+            GameManager.Instance.SpendCoins(cost);
+
+            // 🔹 Tambah jumlah pembelian untuk creature ini
+            if (!creaturePurchaseCount.ContainsKey(currentCreature.index))
+                creaturePurchaseCount[currentCreature.index] = 0;
+            creaturePurchaseCount[currentCreature.index]++;
+
             SummonManager.SummonEvolution(currentCreature.index);
-            CheckCost();
+            ShowCreatureByIndex(currentCreature.index); // refresh UI cost
         }
     }
+
+    // 🔹 Rumus harga dinamis (tidak eksponensial)
+    private int GetCurrentCost(CreatureData creature)
+    {
+        int baseCost = creature.cost;
+        int timesBought = creaturePurchaseCount.ContainsKey(creature.index) ? creaturePurchaseCount[creature.index] : 0;
+
+        float growthRate = 1.5f + (creature.index * 0.15f);
+        growthRate = Mathf.Min(growthRate, 3.0f); // biar gak gila di level tinggi
+
+        // 🔹 Harga = baseCost * (growthRate ^ jumlah beli)
+        float scaled = baseCost * Mathf.Pow(growthRate, timesBought);
+
+        return Mathf.RoundToInt(scaled);
+    }
+
+    // (fungsi ShowNextCreature & ShowPreviousCreature tetap sama)
 
     public void ShowNextCreature()
     {

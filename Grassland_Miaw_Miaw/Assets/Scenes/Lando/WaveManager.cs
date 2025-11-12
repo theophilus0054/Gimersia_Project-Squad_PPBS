@@ -76,7 +76,7 @@ public class WaveManager : MonoBehaviour
             WaveEnemy selected = enemiesLeft[randomIndex];
 
             // Spawn 1 musuh sebagai child parent
-            int row = Random.Range(1, 5); // misal 5 row (1-4)
+            int row = Random.Range(1, 6); // misal 5 row (1-4)
             EnemyManager.Instance.SpawnEnemy(selected.enemyIndex, row, parent);
 
             // Kurangi count

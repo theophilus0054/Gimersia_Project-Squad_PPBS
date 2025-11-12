@@ -93,7 +93,7 @@ public class UpgradeGUIManager : MonoBehaviour
         descriptionPanel.SetActive(true);
         if (nameText) nameText.text = upgrade.upgradeName;
         if (descText) descText.text = upgrade.description;
-        if (costText) costText.text = $"Cost: {upgrade.cost}";
+        if (costText) costText.text = $"{upgrade.cost}";
 
         CheckCost();
     }
