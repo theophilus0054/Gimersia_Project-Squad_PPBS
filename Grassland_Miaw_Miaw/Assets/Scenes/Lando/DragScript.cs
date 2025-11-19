@@ -145,7 +145,7 @@ public class DragScript : MonoBehaviour
         // Update posisi ke dropArea baru
         posX = dropArea.GetX();
         posY = dropArea.GetY();
-        dropArea.OnItemDrop(this);
+        dropArea.OnItemDrop(this, evolutionIndex);
     }
 
     private void HandleMergeAttempt(IDragDrop dropArea, Collider2D hitCollider)
@@ -175,6 +175,7 @@ public class DragScript : MonoBehaviour
                     EvolutionManager.Instance.CanEvolveTo(evolutionIndex, evolutionIndex + 1))
                 {
                     Debug.Log($"🧬 Merge detected at ({dropArea.GetX()}, {dropArea.GetY()})!");
+
                     int nextEvolution = this.evolutionIndex + 1;
 
                     // kosongkan DropArea lama

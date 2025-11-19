@@ -150,15 +150,21 @@ public class SummonGUIManager : MonoBehaviour
             int cost = GetCurrentCost(currentCreature);
             GameManager.Instance.SpendCoins(cost);
 
-            // 🔹 Tambah jumlah pembelian untuk creature ini
-            if (!creaturePurchaseCount.ContainsKey(currentCreature.index))
-                creaturePurchaseCount[currentCreature.index] = 0;
-            creaturePurchaseCount[currentCreature.index]++;
+            // 🔹 Tambah jumlah pembelian untuk creature ini ke GameManager
+            var dict = GameManager.Instance.creaturePurchaseCount;
+            if (!dict.ContainsKey(currentCreature.index))
+                dict[currentCreature.index] = 0;
+
+            dict[currentCreature.index]++;
+
+            // 🔹 Simpan langsung ke file JSON
+            GameManager.Instance.SaveData();
 
             SummonManager.SummonEvolution(currentCreature.index);
             ShowCreatureByIndex(currentCreature.index); // refresh UI cost
         }
     }
+
 
     // 🔹 Rumus harga dinamis (tidak eksponensial)
     private int GetCurrentCost(CreatureData creature)

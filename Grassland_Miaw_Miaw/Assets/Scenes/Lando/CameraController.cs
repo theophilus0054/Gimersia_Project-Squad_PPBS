@@ -17,7 +17,6 @@ public class CameraController : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
 
         if (mainCamera == null)
             mainCamera = Camera.main;

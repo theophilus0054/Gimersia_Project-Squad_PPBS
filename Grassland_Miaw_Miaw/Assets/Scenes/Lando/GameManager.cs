@@ -8,14 +8,13 @@ public class GameData
 {
     public int totalCoins;
     public int highestStage;
-    public int[,] gridLayout; // 5x6 grid, 0 = kosong
-    public bool[] unlockedIndex; // setiap index evolution: true = unlocked, false = locked
+    public List<int> gridLayoutList = new List<int>();
+    public bool[] unlockedIndex;
     public int currentProgress;
     public int targetProgress;
-    public int[] purchasedUpgrade; // index upgrade yang sudah dibeli
+    public int[] purchasedUpgrade;
+    public bool finishedTutorial;
 
-    // Dictionary gak bisa langsung diserialisasi oleh JsonUtility
-    // Jadi kita skip dulu bagian ini dan handle manual nanti kalau butuh
     public List<int> creaturePurchaseKeys = new List<int>();
     public List<int> creaturePurchaseValues = new List<int>();
 }
@@ -24,43 +23,58 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [Header("Game State")]
     public int totalCoins { get; private set; }
     public int highestStage { get; private set; }
+    public bool finishedTutorial = false;
 
-    public int[,] gridLayout = new int[5, 6]; // 5 rows x 6 columns
+    [Header("Grid Data")]
+    public int[,] gridLayout = new int[5, 6];
     public bool[] unlockedIndex;
 
+    [Header("Progress")]
     public int currentProgress { get; private set; }
     public int targetProgress { get; private set; }
 
-    // Dictionary untuk menyimpan jumlah pembelian tiap creature
+    [Header("Purchases")]
     public Dictionary<int, int> creaturePurchaseCount = new Dictionary<int, int>();
 
     private string savePath;
 
     private void Awake()
     {
+        // Singleton pattern
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
 
+        Instance = this;
         savePath = Application.persistentDataPath + "/gamedata.json";
+
         LoadData();
+
+        if (!finishedTutorial)
+        {
+            Debug.Log("🧩 Tutorial belum selesai — GameManager tidak disimpan antar scene.");
+            // Jangan pakai DontDestroyOnLoad biar ke-reset di tutorial
+        }
+
+        DontDestroyOnLoad(gameObject);
+        Debug.Log("✅ GameManager persist antar scene aktif.");
     }
 
-    void Start()
+    private void Start()
     {
-        ResetData();
         LoadGrid();
-        UIManager.Instance.coinText.text = totalCoins.ToString();
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.coinText.text = totalCoins.ToString();
     }
 
     // -------------------------
-    // Coin methods
+    // Coin Methods
     // -------------------------
     public void AddCoins(int amount)
     {
@@ -83,7 +97,7 @@ public class GameManager : MonoBehaviour
     }
 
     // -------------------------
-    // Stage methods
+    // Stage Methods
     // -------------------------
     public void UpdateHighestStage(int stage)
     {
@@ -94,32 +108,31 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void addStageProgress(int current)
+    public void AddStageProgress(int value)
     {
-        currentProgress += current;
+        currentProgress += value;
         SaveData();
     }
 
     public void SetStageProgress(int current, int target, bool force)
     {
-        if (currentProgress != 0 && targetProgress != 0 && !force)
+        if (!force && currentProgress != 0 && targetProgress != 0)
             return;
 
         currentProgress = Mathf.Clamp(current, 0, target);
         targetProgress = Mathf.Max(target, 1);
-
         SaveData();
     }
 
     // -------------------------
-    // Grid methods
+    // Grid Methods
     // -------------------------
     public void SetGridCell(int row, int col, int creatureID)
     {
         if (row < 0 || row >= 5 || col < 0 || col >= 6)
             return;
 
-        gridLayout[row, col] = creatureID;
+        gridLayout[row-1, col-1] = Mathf.Clamp(creatureID, -1, 50);
         SaveData();
     }
 
@@ -128,7 +141,8 @@ public class GameManager : MonoBehaviour
         if (row < 0 || row >= 5 || col < 0 || col >= 6)
             return -1;
 
-        return gridLayout[row, col];
+        int id = gridLayout[row, col];
+        return (id < -1 || id > 50) ? -1 : id;
     }
 
     public void LoadGrid()
@@ -139,27 +153,24 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        for (int row = 0; row < 5; row++)
+        for (int r = 0; r < 5; r++)
         {
-            for (int col = 0; col < 6; col++)
+            for (int c = 0; c < 6; c++)
             {
-                int creatureID = gridLayout[row, col];
-                if (creatureID > 0)
-                {
-                    SummonManager.SummonEvolution(creatureID, row, col, false);
-                }
+                int creatureID = gridLayout[r, c];
+                if (creatureID >= 0 && creatureID <= 50)
+                    SummonManager.SummonEvolution(creatureID, r+1, c+1, false);
             }
         }
     }
 
     // -------------------------
-    // Unlock methods
+    // Unlock Methods
     // -------------------------
     public bool IsUnlocked(int index)
     {
         if (unlockedIndex == null || index < 0 || index >= unlockedIndex.Length)
             return false;
-
         return unlockedIndex[index];
     }
 
@@ -176,106 +187,123 @@ public class GameManager : MonoBehaviour
     }
 
     // -------------------------
-    // Save & Load JSON
+    // Save / Load
     // -------------------------
     public void SaveData()
     {
+        if (!finishedTutorial)
+        {
+            Debug.Log("⏸️ Tutorial belum selesai — data tidak disimpan.");
+            return;
+        }
+
         GameData data = new GameData
         {
             totalCoins = totalCoins,
             highestStage = highestStage,
-            gridLayout = gridLayout,
             unlockedIndex = unlockedIndex,
             currentProgress = currentProgress,
             targetProgress = targetProgress,
-            purchasedUpgrade = UpgradeGUIManager.Instance.allUpgrades
-                .Select((u, i) => u.isPurchased ? i : -1)
-                .Where(i => i != -1)
-                .ToArray(),
+            finishedTutorial = finishedTutorial,
+            purchasedUpgrade = UpgradeGUIManager.Instance != null
+                ? UpgradeGUIManager.Instance.allUpgrades
+                    .Select((u, i) => u.isPurchased ? i : -1)
+                    .Where(i => i != -1)
+                    .ToArray()
+                : new int[0],
 
             creaturePurchaseKeys = creaturePurchaseCount.Keys.ToList(),
             creaturePurchaseValues = creaturePurchaseCount.Values.ToList()
         };
 
+        // Flatten grid to list
+        data.gridLayoutList.Clear();
+        for (int r = 0; r < 5; r++)
+            for (int c = 0; c < 6; c++)
+                data.gridLayoutList.Add(gridLayout[r, c]);
+
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(savePath, json);
+        Debug.Log($"💾 Data saved to {savePath}");
     }
 
     public void LoadData()
     {
-        if (File.Exists(savePath))
-        {
-            string json = File.ReadAllText(savePath);
-            GameData data = JsonUtility.FromJson<GameData>(json);
-
-            totalCoins = data.totalCoins;
-            highestStage = data.highestStage;
-
-            if (data.gridLayout != null && data.gridLayout.Length == 5 * 6)
-                gridLayout = data.gridLayout;
-            else
-                gridLayout = new int[5, 6];
-
-            unlockedIndex = data.unlockedIndex ?? new bool[100];
-
-            currentProgress = data.currentProgress;
-            targetProgress = data.targetProgress;
-
-            // --- Rebuild Dictionary ---
-            creaturePurchaseCount.Clear();
-            for (int i = 0; i < data.creaturePurchaseKeys.Count; i++)
-            {
-                creaturePurchaseCount[data.creaturePurchaseKeys[i]] = data.creaturePurchaseValues[i];
-            }
-
-            // --- Restore purchased upgrades ---
-            if (data.purchasedUpgrade != null && UpgradeGUIManager.Instance != null)
-            {
-                foreach (int index in data.purchasedUpgrade)
-                {
-                    if (index >= 0 && index < UpgradeGUIManager.Instance.allUpgrades.Length)
-                    {
-                        UpgradeGUIManager.Instance.allUpgrades[index].isPurchased = true;
-                    }
-                }
-            }
-        }
-        else
+        if (!File.Exists(savePath))
         {
             ResetData();
+            return;
         }
+
+        string json = File.ReadAllText(savePath);
+        GameData data = JsonUtility.FromJson<GameData>(json);
+
+        totalCoins = data.totalCoins;
+        highestStage = data.highestStage;
+        unlockedIndex = data.unlockedIndex ?? new bool[100];
+        currentProgress = data.currentProgress;
+        targetProgress = data.targetProgress;
+        finishedTutorial = data.finishedTutorial;
+
+        // Restore grid
+        int[] grid = data.gridLayoutList.ToArray();
+        gridLayout = new int[5, 6];
+        for (int i = 0; i < grid.Length && i < 30; i++)
+            gridLayout[i / 6, i % 6] = grid[i];
+
+        // Rebuild creature purchase dictionary
+        creaturePurchaseCount.Clear();
+        for (int i = 0; i < data.creaturePurchaseKeys.Count; i++)
+            creaturePurchaseCount[data.creaturePurchaseKeys[i]] = data.creaturePurchaseValues[i];
+
+        Debug.Log("✅ Game data loaded successfully.");
     }
 
-    // -------------------------
-    // Reset everything
-    // -------------------------
     public void ResetData()
     {
         totalCoins = 10;
         highestStage = 1;
         gridLayout = new int[5, 6];
-        unlockedIndex = new bool[100];
-        currentProgress = 0;
-        targetProgress = StageManager.Instance.stageSummons[0].stageTargetProgress;
-        unlockedIndex[0] = true;
+        for (int r = 0; r < 5; r++)
+            for (int c = 0; c < 6; c++)
+                gridLayout[r, c] = -1;
 
+        unlockedIndex = new bool[100];
+        unlockedIndex[0] = true;
+        currentProgress = 0;
+        targetProgress = StageManager.Instance != null ? StageManager.Instance.stageSummons[0].stageTargetProgress : 10;
         creaturePurchaseCount.Clear();
 
-        foreach (CreatureData creature in SummonGUIManager.Instance.allCreatures)
+        if (!finishedTutorial)
         {
-            if (creature != null)
+            Debug.Log("🚫 Tutorial belum selesai — data tidak direset penuh.");
+            return;
+        }
+
+        if (UpgradeGUIManager.Instance != null)
+        {
+            foreach (UpgradeData upgrade in UpgradeGUIManager.Instance.allUpgrades)
+                upgrade.isPurchased = false;
+        }
+
+        if (SummonGUIManager.Instance != null)
+        {
+            foreach (CreatureData creature in SummonGUIManager.Instance.allCreatures)
             {
                 creature.Effects.Clear();
                 creature.SyncEffectsToArray();
             }
         }
 
-        foreach (UpgradeData upgrade in UpgradeGUIManager.Instance.allUpgrades)
-        {
-            if (upgrade != null)
-                upgrade.isPurchased = false;
-        }
-
         SaveData();
+    }
+
+    public void CompleteTutorial()
+    {
+        finishedTutorial = true;
+        ResetData();
+        SaveData();
+        DontDestroyOnLoad(gameObject);
+        Debug.Log("🎉 Tutorial selesai — GameManager sekarang persist antar scene.");
     }
 }

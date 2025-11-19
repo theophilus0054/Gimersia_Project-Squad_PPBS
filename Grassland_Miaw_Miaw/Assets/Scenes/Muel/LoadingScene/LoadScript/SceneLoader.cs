@@ -2,90 +2,121 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Attach this script to a GameObject in your "LoadScene"
-
 public class SceneLoader : MonoBehaviour
 {
-    // In the Inspector, drag your "LoadingBar" GameObject
-    [SerializeField]
-    private LoadingBarSprite loadingBar;
+    [Header("UI References")]
+    [SerializeField] private LoadingBarSprite loadingBar;
+    [SerializeField] private GameObject tutorialChoiceUI;
+    [SerializeField] private GameObject loadingCompleteText;
 
-    // Set this to the name of the scene you want to load
-    [SerializeField]
-    private string sceneToLoad;
+    [Header("Scene Names")]
+    [SerializeField] private string mainSceneName = "MainScene";
+    [SerializeField] private string tutorialSceneName = "TutorialScene";
 
-    // --- NEW VARIABLE ---
-    // Add a minimum time (in seconds) to show the loading bar.
-    // You can change this in the Inspector.
-    [SerializeField]
-    private float minLoadTime = 2.0f;
+    [Header("Settings")]
+    [SerializeField] private float minLoadTime = 2.0f;
 
-    void Start()
+    private bool isReadyToProceed = false;
+    private bool skipTutorial = false;
+
+    private void Start()
     {
-        // Check if dependencies are set
         if (loadingBar == null)
         {
-            Debug.LogError("SceneLoader: 'LoadingBar' is not assigned in the Inspector!");
+            Debug.LogError("❌ SceneLoader: Missing LoadingBarSprite reference!");
             return;
         }
-        if (string.IsNullOrEmpty(sceneToLoad))
-        {
-             Debug.LogError("SceneLoader: 'SceneToLoad' is not set in the Inspector!");
-             return;
-        }
 
-        // Start loading the scene in the background
         StartCoroutine(LoadSceneAsync());
     }
 
     private IEnumerator LoadSceneAsync()
     {
+        // ✅ Cek dulu apakah tutorial sudah selesai
+        bool shouldShowTutorialChoice = GameManager.Instance != null && !GameManager.Instance.finishedTutorial;
+        
+        string targetScene = shouldShowTutorialChoice ? tutorialSceneName : mainSceneName;
+        
+        Debug.Log($"🎮 Loading scene: {targetScene}, ShowChoice: {shouldShowTutorialChoice}");
+
         float elapsedTime = 0f;
-
-        // Start the asynchronous operation
-        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneToLoad);
-
-        // --- MODIFICATION 1 ---
-        // Prevent the scene from activating as soon as it's ready.
-        // We will control when it activates.
+        AsyncOperation operation = SceneManager.LoadSceneAsync(targetScene);
         operation.allowSceneActivation = false;
 
-        // Loop until BOTH conditions are met:
-        // 1. The scene is at least 90% loaded (operation.progress < 0.9f)
-        // 2. The minimum load time has passed (elapsedTime < minLoadTime)
+        // Loading progress
         while (operation.progress < 0.9f || elapsedTime < minLoadTime)
         {
-            // Count up our timer
             elapsedTime += Time.deltaTime;
-
-            // Calculate progress based on TIME (0.0 to 1.0)
             float timeProgress = Mathf.Clamp01(elapsedTime / minLoadTime);
-
-            // Calculate progress based on actual LOAD (0.0 to 1.0)
             float loadProgress = Mathf.Clamp01(operation.progress / 0.9f);
-
-            // The progress bar will show the SLOWER of the two.
-            // This ensures the bar waits for both the real load AND the min time.
             float displayProgress = Mathf.Min(timeProgress, loadProgress);
-
             loadingBar.SetProgress(displayProgress);
-
-            // Wait until the next frame
             yield return null;
         }
 
-        // --- Loop is done. Now we are ready to switch scenes. ---
+        loadingBar.SetProgress(1f);
+        yield return new WaitForSeconds(0.3f);
 
-        // Force the bar to 100% just in case
-        loadingBar.SetProgress(1.0f);
+        // ✅ Jika tutorial belum selesai, tampilkan UI pilihan
+        if (shouldShowTutorialChoice)
+        {
+            loadingCompleteText?.SetActive(false);
+            tutorialChoiceUI?.SetActive(true);
 
-        // --- FIX 2: THE "FREEZE" ---
-        // Reset the Time Scale to 1 (normal speed) to un-pause the game.
-        // This fixes the "freeze" issue in the next scene.
-        Time.timeScale = 1.0f;
+            Debug.Log("⏸️ Waiting for user choice...");
 
-        // --- MODIFICATION 2 ---
-        // Now we allow the scene to finally activate.
+            // Tunggu pilihan user
+            yield return new WaitUntil(() => isReadyToProceed);
+
+            Debug.Log($"✅ User choice received! Skip: {skipTutorial}");
+
+            tutorialChoiceUI?.SetActive(false);
+
+            // 🔧 Jika skip, langsung load main scene (synchronous)
+            if (skipTutorial)
+            {
+                Debug.Log("⏭️ Skipping to main scene...");
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(mainSceneName);
+                yield break;
+            }
+            
+            Debug.Log("▶️ User chose tutorial - activating scene");
+        }
+
+        // Aktivasi scene (tutorial atau main)
+        Debug.Log($"🚀 Activating scene: {targetScene}");
+        Time.timeScale = 1f;
         operation.allowSceneActivation = true;
+    }
+
+    // --- UI BUTTON EVENTS ---
+    public void OnPlayTutorialPressed()
+    {
+        Debug.Log("▶️ OnPlayTutorialPressed() called!");
+        skipTutorial = false;
+        isReadyToProceed = true;
+    }
+
+    public void OnSkipTutorialPressed()
+    {
+        Debug.Log("⏭ OnSkipTutorialPressed() called!");
+        
+        // Tandai tutorial sudah selesai
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.finishedTutorial = true;
+            GameManager.Instance.SaveData();
+            Debug.Log("💾 Tutorial marked as finished and saved");
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ GameManager.Instance is null!");
+        }
+        
+        skipTutorial = true;
+        isReadyToProceed = true;
+        
+        Debug.Log($"✅ Skip flags set!");
     }
 }

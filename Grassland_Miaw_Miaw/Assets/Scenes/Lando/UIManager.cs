@@ -39,6 +39,7 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
+        coinText.text = GameManager.Instance.totalCoins.ToString();
         // Optional: inisialisasi stage text
         UpdateStageText(StageManager.Instance.currentStage);
     }
@@ -107,7 +108,7 @@ public class UIManager : MonoBehaviour
         AudioManager.Instance.PlayDeniedInteraction();
         indexRoutine = StartCoroutine(ActivateAndFadeOut(1f));
     }
-    
+
     public IEnumerator ActivateAndFadeOut(float duration)
     {
         // --- Step 1: Aktifkan GameObject ---
@@ -140,5 +141,18 @@ public class UIManager : MonoBehaviour
 
         // --- Step 3: Deactivate GameObject ---
         popupFeatureIndex.SetActive(false);
+    }
+    
+    public void OnExitGamePressed()
+    {
+        Debug.Log("🚪 Exit Game pressed");
+
+    #if UNITY_EDITOR
+        // Kalau sedang di Unity Editor — stop play mode
+        UnityEditor.EditorApplication.isPlaying = false;
+    #else
+        // Kalau di build (PC, Android, dll) — keluar dari game
+        Application.Quit();
+    #endif
     }
 }

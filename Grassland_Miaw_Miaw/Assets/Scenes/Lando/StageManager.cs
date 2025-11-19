@@ -138,7 +138,7 @@ public class StageManager : MonoBehaviour
             int enemyIndex = stageData.GetRandomEnemyIndex();
             int row = GetWeightedRandomRow();
 
-            enemyManager.SpawnEnemy(enemyIndex, row, true);
+            enemyManager.SpawnEnemy(enemyIndex, row);
 
             yield return new WaitForSeconds(0.5f / spawnIntensity);
         }

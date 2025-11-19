@@ -19,7 +19,6 @@ public class EvolutionManager : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     public CreatureData GetEvolution(int index)

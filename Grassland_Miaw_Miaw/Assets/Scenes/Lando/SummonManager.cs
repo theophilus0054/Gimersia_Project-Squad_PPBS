@@ -17,8 +17,15 @@ public class SummonManager : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
         Debug.Log("SummonManager instance initialized.");
+    }
+
+    public void Start()
+    {
+        if(GameManager.Instance != null)
+        {
+            GameManager.Instance.LoadGrid();
+        }
     }
 
     // -------------------------
@@ -118,7 +125,7 @@ public class SummonManager : MonoBehaviour
         {
             drag.posX = target.x;
             drag.posY = target.y;
-            target.OnItemDrop(drag);
+            target.OnItemDrop(drag, evolutionIndex);
         }
 
         if (saveToGrid)

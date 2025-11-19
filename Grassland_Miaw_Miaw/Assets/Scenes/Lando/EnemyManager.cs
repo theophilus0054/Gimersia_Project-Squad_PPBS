@@ -71,7 +71,6 @@ public class EnemyManager : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     // ✅ Getter
@@ -96,8 +95,13 @@ public class EnemyManager : MonoBehaviour
         enemies[index] = newData;
     }
 
+    public void SpawnEnemy()
+    {
+        SpawnEnemy(0, 3);
+    }
+
     // ✅ Spawn enemy by index
-    public GameObject SpawnEnemy(int index, int row, bool isSummon)
+    public GameObject SpawnEnemy(int index, int row)
     {
         if (index < 0 || index >= enemies.Count)
         {

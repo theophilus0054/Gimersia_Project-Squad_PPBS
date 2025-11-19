@@ -27,9 +27,10 @@ public class DropArea : MonoBehaviour, IDragDrop
     public int GetY() => y;
     public bool getFilled() => filled;
 
-    public void OnItemDrop(DragScript drop)
+    public void OnItemDrop(DragScript drop, int evoIndex)
     {
         drop.transform.position = transform.position;
+        GameManager.Instance.SetGridCell(x, y, evoIndex);
         filled = true;
         UpdateColor();
     }
@@ -37,6 +38,7 @@ public class DropArea : MonoBehaviour, IDragDrop
     public void OnItemLeave(DragScript drop)
     {
         filled = false;
+        GameManager.Instance.SetGridCell(x, y, -1);
         UpdateColor();
     }
 

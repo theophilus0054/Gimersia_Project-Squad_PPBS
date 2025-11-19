@@ -13,17 +13,17 @@ public class SlideStageScript : MonoBehaviour
     // ===================================================
     // 🧩 Singleton Setup
     // ===================================================
-    private void Awake()
+    void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+
+        Debug.Log($"✅ {name} diset untuk tetap hidup antar scene (tutorial sudah selesai).");
     }
 
     private void EnsureManager()

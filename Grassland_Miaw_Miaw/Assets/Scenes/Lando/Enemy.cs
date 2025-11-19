@@ -104,7 +104,7 @@ public class Enemy : MonoBehaviour, IDamageable
             {
                 if (getProgress)
                 {
-                    GameManager.Instance.addStageProgress(pointProgression);
+                    GameManager.Instance.AddStageProgress(pointProgression);
                     StageManager.Instance.UpdateTargetAchieved();
                 }
                 ObjectManager.Instance.SummonCoin(gameObject, Random.Range(baseCoin, Mathf.RoundToInt(baseCoin * 1.3f)));
