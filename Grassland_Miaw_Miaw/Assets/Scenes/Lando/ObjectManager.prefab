@@ -1,0 +1,302 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6306087934571993853
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5185037909340991331}
+  - component: {fileID: 518266266528563141}
+  - component: {fileID: 806178181518424058}
+  - component: {fileID: 7650623270898404675}
+  - component: {fileID: 1148705233780678641}
+  - component: {fileID: 8813049794054910599}
+  - component: {fileID: 2136042198293149149}
+  - component: {fileID: 7869101276511179264}
+  - component: {fileID: 603781180498066436}
+  - component: {fileID: 2996206752512194698}
+  - component: {fileID: 3819895459080418070}
+  - component: {fileID: 7013372860204170301}
+  m_Layer: 0
+  m_Name: ObjectManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5185037909340991331
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &518266266528563141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab5b16d650bb4d7499d4b7795b1993a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  unlockedIndex: 
+  finishedTutorial: 0
+--- !u!114 &806178181518424058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2b3862cb231fa94ea161ff25fe86aa5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EvolutionManager
+  evolutions:
+  - {fileID: 11400000, guid: 931bced8feaed8446b47086796ca92f2, type: 2}
+  - {fileID: 11400000, guid: 0ad51ddf04226964d84df70df1084438, type: 2}
+  - {fileID: 11400000, guid: 67f59fc270d108340bab99e34670417a, type: 2}
+--- !u!114 &7650623270898404675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1abd7604373c4244898a0e9682b72cd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  dropAreaParent: {fileID: 0}
+--- !u!114 &1148705233780678641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff4b225aa298d494d89dbae0527b900e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  enemies:
+  - index: 0
+    name: Tallien
+    type: 0
+    hp: 80
+    baseCoin: 10
+    movementSpeed: 0.5
+    atk: 20
+    atkspd: 1
+    prefab: {fileID: 1367602951857954230, guid: 2ff4bf9c18060bb468f12c7e21cadfd1, type: 3}
+--- !u!114 &8813049794054910599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5e7e4c7b4a3eb8499a08e87358edeb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  waves:
+  - waveName: Tidal Tallian
+    enemies:
+    - enemyIndex: 0
+      count: 100
+    delayBetweenSpawns: 0
+    delayBeforeNextWave: 3
+  - waveName: Tallian Attack
+    enemies:
+    - enemyIndex: 0
+      count: 5
+    delayBetweenSpawns: 0.3
+    delayBeforeNextWave: 3
+  - waveName: Tallian SIege
+    enemies:
+    - enemyIndex: 0
+      count: 10
+    delayBetweenSpawns: 0.3
+    delayBeforeNextWave: 3
+  - waveName: Tidal Tallian
+    enemies:
+    - enemyIndex: 0
+      count: 20
+    delayBetweenSpawns: 0.3
+    delayBeforeNextWave: 3
+--- !u!114 &2136042198293149149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b09329de83167784c8a6c06757e57afa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  stageSummons:
+  - stageName: Stage 1
+    stageTargetProgress: 5
+    enemyIndices: 00000000
+    spawnChances:
+    - 100
+    hpMultiplier: 1
+    atkMultiplier: 1
+    coinsMultiplier: 100
+    spawnIntensity: 0.1
+    waveIndices: 00000000
+  - stageName: Stage 2
+    stageTargetProgress: 10
+    enemyIndices: 00000000
+    spawnChances:
+    - 100
+    hpMultiplier: 1.1
+    atkMultiplier: 1.1
+    coinsMultiplier: 1.1
+    spawnIntensity: 0.15
+    waveIndices: 0000000001000000
+  - stageName: Stage 3
+    stageTargetProgress: 20
+    enemyIndices: 00000000
+    spawnChances:
+    - 100
+    hpMultiplier: 1.2
+    atkMultiplier: 1.2
+    coinsMultiplier: 1.2
+    spawnIntensity: 0.2
+    waveIndices: 0100000002000000
+  waveManager: {fileID: 8813049794054910599}
+  enemyManager: {fileID: 1148705233780678641}
+  totalRows: 5
+  currentStage: 1
+  isSummonPhase: 1
+  targetAchieved: 0
+--- !u!114 &7869101276511179264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fae8fc31a55e4e4db0236a9941e72d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  stageBack: {fileID: 0}
+  stageNext: {fileID: 0}
+  WaveStagePanel: {fileID: 0}
+  WaveSurrenderPanel: {fileID: 0}
+  WaveEndlessPanel: {fileID: 0}
+  waveFailedFrame: {fileID: 0}
+  waveFinishedFrame: {fileID: 0}
+  stageText: {fileID: 0}
+  coinText: {fileID: 0}
+  popupWarningSlot: {fileID: 0}
+  popupWarningPrefab: {fileID: 2246706335742967872, guid: b093da4c647b7594892ee5bf0866efd0, type: 3}
+  popupFeatureIndex: {fileID: 0}
+--- !u!114 &603781180498066436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15860fcde5a3f544d846208391cf2484, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  creatureSpawn: {fileID: 0}
+  enemySpawn: {fileID: 0}
+  coinObject: {fileID: 6793824359796084241, guid: 691bac2d847927a42b8fc4e9a7eb94ac, type: 3}
+  coinLocation: {fileID: 0}
+--- !u!114 &2996206752512194698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3459830fe431ab4bb189604b69b4e09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraController
+  mainCamera: {fileID: 0}
+  slideDistance: 19.2
+--- !u!114 &3819895459080418070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44e8f878a5721f641a17fb83bb30dbb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  allCreatures:
+  - {fileID: 11400000, guid: 931bced8feaed8446b47086796ca92f2, type: 2}
+  - {fileID: 11400000, guid: 0ad51ddf04226964d84df70df1084438, type: 2}
+  - {fileID: 11400000, guid: 67f59fc270d108340bab99e34670417a, type: 2}
+  descriptionPanel: {fileID: 0}
+  nameText: {fileID: 0}
+  statsText: {fileID: 0}
+  descText: {fileID: 0}
+  costText: {fileID: 0}
+  currentText: {fileID: 0}
+  prefabCreatureDisplay: {fileID: 0}
+  summonCollider: {fileID: 0}
+  summonButton: {fileID: 0}
+  currentIndex: 0
+--- !u!114 &7013372860204170301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6306087934571993853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 458c60e1aaedd694193d13d0d3dc47f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeGUIManager
+  allUpgrades:
+  - {fileID: 11400000, guid: ef86198dfa339a64190917a9a5a4324a, type: 2}
+  - {fileID: 11400000, guid: 0758eeb4fec2b704896d27bdb00e72ad, type: 2}
+  - {fileID: 11400000, guid: d739281c700dd0f47bb31ca46bf9d02b, type: 2}
+  - {fileID: 11400000, guid: 8a957d5771c128f4dae65af5b41dc2fe, type: 2}
+  - {fileID: 11400000, guid: 6d39e0cc9e50a5d4b90207ef6a215947, type: 2}
+  - {fileID: 11400000, guid: 2194cf91f48f7ee49b2fc651576a514d, type: 2}
+  - {fileID: 11400000, guid: c1f2aff6782b4e145895140dfbacc37e, type: 2}
+  descriptionPanel: {fileID: 0}
+  nameText: {fileID: 0}
+  descText: {fileID: 0}
+  costText: {fileID: 0}
+  UpgradeCollider: {fileID: 0}
+  UpgradeButton: {fileID: 0}
+  currentIndex: 0

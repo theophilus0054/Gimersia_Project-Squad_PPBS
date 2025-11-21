@@ -1,0 +1,183 @@
+    using System.Collections.Generic;
+    using UnityEngine;
+
+    public class CreatureAttack : MonoBehaviour
+    {
+        [Header("Attack Settings")]
+        public GameObject projectilePrefab;
+        public Transform fireOrigin;
+        public float fireDelay = 5f;
+
+        [HideInInspector] public List<Transform> enemiesInRange = new List<Transform>();
+
+        private float fireCooldown = 0f;
+        private Animator animator;
+        private int evoIndex;
+        private bool targetDetected = false;
+
+    void Start()
+    {
+        // Animator reference
+        animator = GetComponent<Animator>();
+        if (animator == null)
+            Debug.LogWarning($"{name}: Animator not found! Attack animations won't play.");
+
+        // DragScript check
+        var drag = GetComponent<DragScript>();
+        if (drag == null)
+        {
+            Debug.LogError($"{name} is missing DragScript component!");
+            enabled = false;
+            return;
+        }
+        evoIndex = drag.evolutionIndex;
+
+        // EvolutionManager check
+        if (EvolutionManager.Instance == null)
+        {
+            Debug.LogError("EvolutionManager.Instance is NULL! Make sure it's in the scene!");
+            enabled = false;
+            return;
+        }
+
+        CreatureData evoData = EvolutionManager.Instance.GetEvolution(evoIndex);
+        if (evoData == null)
+        {
+            Debug.LogError($"Evolution data for index {evoIndex} not found!");
+            enabled = false;
+            return;
+        }
+
+        fireDelay = evoData.atkSpeed;
+    }
+        
+
+    void Update()
+    {
+        Transform target = GetNearestEnemy();
+
+        if (target != null)
+        {
+            // Jika target baru terdeteksi, beri delay sebelum menyerang
+            if (!targetDetected)
+            {
+                targetDetected = true;
+                fireCooldown = fireDelay; // delay pertama sebelum menyerang
+            }
+
+            fireCooldown -= Time.deltaTime;
+
+            if (fireCooldown <= 0f)
+            {
+                Debug.Log($"{name}: Anjay nembak {target.name}");
+                FireAt(target);
+                fireCooldown = fireDelay; // reset cooldown setelah menyerang
+            }
+        }
+        else
+        {
+            targetDetected = false; // reset flag jika tidak ada target
+            fireCooldown = 0f;      // optional reset cooldown
+        }
+    }
+        
+
+    Transform GetNearestEnemy()
+    {
+        Transform nearest = null;
+        float bestDist = float.MaxValue;
+
+        for (int i = enemiesInRange.Count - 1; i >= 0; i--)
+        {
+            if (enemiesInRange[i] == null)
+            {
+                Debug.LogWarning($"{name}: Enemy at index {i} is null, removing from list.");
+                enemiesInRange.RemoveAt(i);
+                continue;
+            }
+
+            float d = Vector2.Distance(transform.position, enemiesInRange[i].position);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                nearest = enemiesInRange[i];
+            }
+        }
+
+        return nearest;
+    }   
+        
+
+    void FireAt(Transform target)
+    {
+        if (animator != null)
+        {
+            Debug.Log($"{name}: Triggering attack animation.");
+            // Trigger animasi attack
+            animator.SetTrigger("isAttack");
+        }
+
+        // Projectile akan muncul lewat Animation Event (ShootProjectile)
+    }
+
+    // ===== Fungsi yang dipanggil dari Animation Event =====
+    public void ShootProjectile()
+    {
+        Transform target = GetNearestEnemy();
+        if (target == null)
+            return;
+
+        if (projectilePrefab == null || fireOrigin == null)
+        {
+            Debug.LogWarning($"{name}: Cannot spawn projectile. Missing prefab or fireOrigin.");
+            return;
+        }
+
+        var projObj = Instantiate(projectilePrefab, fireOrigin.position, Quaternion.identity);
+        AudioManager.Instance.PlayUnagiBubble(gameObject.GetComponent<AudioSource>());
+        Projectile p = projObj.GetComponent<Projectile>();
+        if (p != null)
+        {
+            int evoIndex = GetComponent<DragScript>().evolutionIndex;
+            if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.Slow)
+            {
+                p.Init(target, evoIndex, Effect.Slow);
+            } else
+            {
+                p.Init(target, evoIndex, Effect.None);
+            }
+        }
+
+        Debug.Log($"{name}: Projectile spawned at {fireOrigin.position} targeting {target.name}");
+    }
+
+    public static Effect RollEffect(EffectData[] effects)
+    {
+        if (effects == null || effects.Length == 0)
+            return Effect.None;
+
+        float totalChance = 0f;
+
+        // Hitung total chance untuk normalisasi (jika perlu)
+        foreach (var e in effects)
+        {
+            totalChance += e.chanceToApply;
+        }
+
+        // Random value antara 0 dan 100
+        float roll = Random.Range(0f, 100f);
+        float cumulative = 0f;
+
+        foreach (var e in effects)
+        {
+            cumulative += e.chanceToApply;
+            if (roll <= cumulative)
+            {
+                return e.effectType;
+            }
+        }
+
+        // Kalau roll tidak kena efek manapun, return None
+        return Effect.None;
+    }
+}

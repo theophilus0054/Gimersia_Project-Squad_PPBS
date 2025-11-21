@@ -2,20 +2,24 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
-  tags: []
+  serializedVersion: 3
+  tags:
+  - Enemy
+  - Projectile
+  - DropArea
+  - Creature
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - UIBG
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
+  - DropArea
+  - Creature
+  - RangeArea
+  - Enemy
+  - Projectile
   - 
   - 
   - 
@@ -41,3 +45,23 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: BGM
+    uniqueID: 1767260833
+    locked: 0
+  - name: Tengah
+    uniqueID: 1025307439
+    locked: 0
+  - name: Depan
+    uniqueID: 207456759
+    locked: 0
+  - name: UI
+    uniqueID: 1985760185
+    locked: 0
+  - name: UPGRADE
+    uniqueID: 4049114071
+    locked: 0
+  - name: SUMMON
+    uniqueID: 3384067279
+    locked: 0
+  m_RenderingLayers:
+  - Default
