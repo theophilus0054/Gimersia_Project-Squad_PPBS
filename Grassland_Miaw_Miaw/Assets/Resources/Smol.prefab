@@ -66,7 +66,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0.3}
-  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1556699771008862148}
@@ -102,7 +102,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a5935ca56e45f9f45874bcc565c5f011, type: 2}
+  - {fileID: 2100000, guid: 40ff49c52eff64b47a1847fabaf7c32b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -147,15 +147,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d739f209b0097741b0919c02b925b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  maxHP: 50
-  atk: 10
-  moveSpeed: 2
-  enemyIndex: 0
-  baseCoin: 10
-  pointProgression: 1
+  enemyIndex: 1
   getProgress: 1
   dropItemOnDeath: 1
-  flashMaterial: {fileID: 2100000, guid: a5935ca56e45f9f45874bcc565c5f011, type: 2}
+  flashMaterial: {fileID: 2100000, guid: 40ff49c52eff64b47a1847fabaf7c32b, type: 2}
   flashColor: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.2
 --- !u!61 &1342124627112182239
@@ -216,10 +211,10 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 0.0001
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2

@@ -6,7 +6,7 @@ using System.Linq;
 [System.Serializable]
 public class GameData
 {
-    public int totalCoins;
+    public long totalCoins;
     public int highestStage;
     public List<int> gridLayoutList = new List<int>();
     public bool[] unlockedIndex;
@@ -24,7 +24,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Game State")]
-    public int totalCoins { get; private set; }
+    public long totalCoins { get; private set; }
     public int highestStage { get; private set; }
     public bool finishedTutorial = false;
 
@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour
         LoadGrid();
 
         if (UIManager.Instance != null)
-            UIManager.Instance.coinText.text = totalCoins.ToString();
+            UIManager.Instance.coinText.text = ScaleNumber(totalCoins);
     }
 
     // -------------------------
@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
     public void AddCoins(int amount)
     {
         totalCoins += amount;
-        UIManager.Instance.coinText.text = totalCoins.ToString();
+        UIManager.Instance.coinText.text = ScaleNumber(totalCoins);
         SaveData();
     }
 
@@ -89,11 +89,23 @@ public class GameManager : MonoBehaviour
         {
             AudioManager.Instance.PlayBuyInteraction();
             totalCoins -= amount;
-            UIManager.Instance.coinText.text = totalCoins.ToString();
+            UIManager.Instance.coinText.text = ScaleNumber(totalCoins);
             SaveData();
             return true;
         }
         return false;
+    }
+
+    public static string ScaleNumber(long value)
+    {
+        if (value >= 1_000_000_000)
+            return (value / 1_000_000_000f).ToString("0.#") + "B";
+        if (value >= 1_000_000)
+            return (value / 1_000_000f).ToString("0.#") + "M";
+        if (value >= 1_000)
+            return (value / 1_000f).ToString("0.#") + "K";
+
+        return value.ToString();
     }
 
     // -------------------------
@@ -129,19 +141,26 @@ public class GameManager : MonoBehaviour
     // -------------------------
     public void SetGridCell(int row, int col, int creatureID)
     {
-        if (row < 0 || row >= 5 || col < 0 || col >= 6)
+        // validasi index 1..5 dan 1..6
+        if (row < 1 || row > 5 || col < 1 || col > 6)
             return;
 
-        gridLayout[row-1, col-1] = Mathf.Clamp(creatureID, -1, 50);
+        int r = row - 1;
+        int c = col - 1;
+
+        gridLayout[r, c] = Mathf.Clamp(creatureID, -1, 50);
         SaveData();
     }
 
     public int GetGridCell(int row, int col)
     {
-        if (row < 0 || row >= 5 || col < 0 || col >= 6)
+        if (row < 1 || row > 5 || col < 1 || col > 6)
             return -1;
 
-        int id = gridLayout[row, col];
+        int r = row - 1;
+        int c = col - 1;
+
+        int id = gridLayout[r, c];
         return (id < -1 || id > 50) ? -1 : id;
     }
 
@@ -256,8 +275,24 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < data.creaturePurchaseKeys.Count; i++)
             creaturePurchaseCount[data.creaturePurchaseKeys[i]] = data.creaturePurchaseValues[i];
 
+        // 🔥 DEBUG: Print isi dictionary
+        Debug.Log("======== DICTIONARY PURCHASE COUNT ========");
+        if (creaturePurchaseCount.Count == 0)
+        {
+            Debug.Log("❌ Dictionary EMPTY !");
+        }
+        else
+        {
+            foreach (var kv in creaturePurchaseCount)
+            {
+                Debug.Log($"KEY: {kv.Key}  |  VALUE: {kv.Value}");
+            }
+        }
+        Debug.Log("===========================================");
+
         Debug.Log("✅ Game data loaded successfully.");
     }
+
 
     public void ResetData()
     {

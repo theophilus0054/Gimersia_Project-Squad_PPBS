@@ -81,6 +81,7 @@ public class EnemyManager : MonoBehaviour
             Debug.LogWarning($"Enemy index {index} out of range!");
             return null;
         }
+        Debug.LogWarning(enemies[index].ToString());
         return enemies[index];
     }
 

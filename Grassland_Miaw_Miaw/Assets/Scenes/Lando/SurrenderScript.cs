@@ -15,6 +15,11 @@ public class SurrenderScript : MonoBehaviour
         StartSlide(yActive);
     }
 
+    public void DeactivateButton()
+    {
+        StartSlide(yStart);
+    }
+
     void OnMouseDown()
     {
         AudioManager.Instance.PlayDropCreature();

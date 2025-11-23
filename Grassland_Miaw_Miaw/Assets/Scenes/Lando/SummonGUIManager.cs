@@ -27,9 +27,6 @@ public class SummonGUIManager : MonoBehaviour
     private CreatureData currentCreature;
     private GameObject currentPreviewInstance;
 
-    // 🔹 Tambahan: catat jumlah pembelian tiap creature
-    private Dictionary<int, int> creaturePurchaseCount = new Dictionary<int, int>();
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -64,6 +61,18 @@ public class SummonGUIManager : MonoBehaviour
             Destroy(currentPreviewInstance);
     }
 
+    public static string ScaleNumber(long value)
+    {
+        if (value >= 1_000_000_000)
+            return (value / 1_000_000_000f).ToString("0.#") + "B";
+        if (value >= 1_000_000)
+            return (value / 1_000_000f).ToString("0.#") + "M";
+        if (value >= 1_000)
+            return (value / 1_000f).ToString("0.#") + "K";
+
+        return value.ToString();
+    }
+
     public void ShowCreatureByIndex(int index)
     {
         CreatureData creature = null;
@@ -92,7 +101,7 @@ public class SummonGUIManager : MonoBehaviour
         if (descText) descText.text = creature.description;
 
         // 🔹 Tampilkan harga yang dinamis
-        if (costText) costText.text = $"Cost: {GetCurrentCost(creature)}";
+        if (costText) costText.text = $"Cost: {ScaleNumber(GetCurrentCost(creature))}";
 
         if (currentText)
             currentText.text = creature.type == CreatureType.Unagi ? $"T{creature.index + 1}" : "";
@@ -170,7 +179,8 @@ public class SummonGUIManager : MonoBehaviour
     private int GetCurrentCost(CreatureData creature)
     {
         int baseCost = creature.cost;
-        int timesBought = creaturePurchaseCount.ContainsKey(creature.index) ? creaturePurchaseCount[creature.index] : 0;
+
+        int timesBought = GameManager.Instance.creaturePurchaseCount.ContainsKey(creature.index) ? GameManager.Instance.creaturePurchaseCount[creature.index] : 0;
 
         float growthRate = 1.5f + (creature.index * 0.15f);
         growthRate = Mathf.Min(growthRate, 3.0f); // biar gak gila di level tinggi

@@ -85,6 +85,8 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
+        currentStage = GameManager.Instance.highestStage;
+        UIManager.Instance.UpdateStageText(currentStage);
         StartStage(currentStage);
     }
 

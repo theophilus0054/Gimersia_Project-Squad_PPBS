@@ -22,10 +22,7 @@ public class SummonManager : MonoBehaviour
 
     public void Start()
     {
-        if(GameManager.Instance != null)
-        {
-            GameManager.Instance.LoadGrid();
-        }
+
     }
 
     // -------------------------

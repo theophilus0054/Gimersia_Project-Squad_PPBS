@@ -6,12 +6,12 @@ using System.Collections;
 public class Enemy : MonoBehaviour, IDamageable
 {
     [Header("Stats")]
-    public float maxHP = 50f;
-    public float atk = 10f;
-    public float moveSpeed = 1f;
+    private float maxHP = 50f;
+    private float atk = 10f;
+    private float moveSpeed = 1f;
     public int enemyIndex = 0;
-    public int baseCoin = 10;
-    public int pointProgression = 1;
+    private int baseCoin = 10;
+    private int pointProgression = 1;
 
     private float hp;
     private Rigidbody2D rb;
@@ -67,10 +67,15 @@ public class Enemy : MonoBehaviour, IDamageable
     void MoveLeft()
     {
         var atkComp = GetComponent<EnemyAttack>();
+
         if (atkComp != null && atkComp.enemiesInRange.Count > 0)
         {
             rb.linearVelocity = Vector2.zero;
             return;
+        }
+        if(rb == null)
+        {
+            Debug.LogError("tak bisa gerak");
         }
 
         rb.linearVelocity = new Vector2(-moveSpeed, rb.linearVelocity.y);

@@ -93,7 +93,7 @@ public class UpgradeGUIManager : MonoBehaviour
         descriptionPanel.SetActive(true);
         if (nameText) nameText.text = upgrade.upgradeName;
         if (descText) descText.text = upgrade.description;
-        if (costText) costText.text = $"{upgrade.cost}";
+        if (costText) costText.text = $"{ScaleNumber(upgrade.cost)}";
 
         CheckCost();
     }
@@ -153,5 +153,17 @@ public class UpgradeGUIManager : MonoBehaviour
         }
 
         Debug.Log($"{upgrade.name} applied!");
+    }
+
+    public static string ScaleNumber(long value)
+    {
+        if (value >= 1_000_000_000)
+            return (value / 1_000_000_000f).ToString("0.#") + "B";
+        if (value >= 1_000_000)
+            return (value / 1_000_000f).ToString("0.#") + "M";
+        if (value >= 1_000)
+            return (value / 1_000f).ToString("0.#") + "K";
+
+        return value.ToString();
     }
 }

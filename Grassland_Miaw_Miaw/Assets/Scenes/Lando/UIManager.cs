@@ -37,12 +37,35 @@ public class UIManager : MonoBehaviour
         Instance = this;
     }
 
+    public static string ScaleNumber(long value)
+    {
+        if (value >= 1_000_000_000)
+            return (value / 1_000_000_000f).ToString("0.#") + "B";
+        if (value >= 1_000_000)
+            return (value / 1_000_000f).ToString("0.#") + "M";
+        if (value >= 1_000)
+            return (value / 1_000f).ToString("0.#") + "K";
+
+        return value.ToString();
+    }
+
     void Start()
     {
-        coinText.text = GameManager.Instance.totalCoins.ToString();
-        // Optional: inisialisasi stage text
-        UpdateStageText(StageManager.Instance.currentStage);
+        coinText.text = ScaleNumber(GameManager.Instance.totalCoins);
     }
+
+    void Update()
+    {
+        if (StageManager.Instance.isSummonPhase)
+        {
+            WaveSurrenderPanel.GetComponent<SurrenderScript>().DeactivateButton();
+        } else
+        {
+            WaveStagePanel.GetComponent<SlideButton>().DeactivateButton();
+        }
+    }
+
+
 
     public void UpdateStageText(int stageNumber)
     {
