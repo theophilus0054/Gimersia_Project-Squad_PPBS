@@ -47,10 +47,12 @@ public class WaveManager : MonoBehaviour
 
     public IEnumerator StartWaves()
     {
+        BGMManager.Instance.ToggleBGM();
         Debug.Log("🚀 Starting Waves...");
         for (int i = 0; i < waves.Count; i++)
         {
             currentWaveIndex = i;
+            RippleManager.Instance.callShockwave();
             yield return StartCoroutine(SpawnWave(waves[i]));
             yield return new WaitForSeconds(waves[i].delayBeforeNextWave);
         }

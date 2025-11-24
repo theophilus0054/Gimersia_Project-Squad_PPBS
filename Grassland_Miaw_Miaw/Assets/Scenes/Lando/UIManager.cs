@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     public GameObject WaveEndlessPanel;
 
     [Header("Wave Condition Frame")]
+    public GameObject waveNotificationPanel;
     public GameObject waveFailedFrame;
     public GameObject waveFinishedFrame;
 

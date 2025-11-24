@@ -17,6 +17,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip unlockNewCreature;
     public AudioClip pickupCreature;
     public AudioClip dropCreature;
+    public AudioClip waveSplash;
 
     [Header("Pitch Settings")]
     [Range(0.5f, 2f)] public float minPitch = 0.90f;
@@ -97,6 +98,7 @@ public class AudioManager : MonoBehaviour
     public void PlayUnlockNewCreature(AudioSource source = null) => Play(source ?? GetMainSource(), unlockNewCreature);
     public void PlayPickupCreature(AudioSource source = null) => Play(source ?? GetMainSource(), pickupCreature);
     public void PlayDropCreature(AudioSource source = null) => Play(source ?? GetMainSource(), dropCreature);
+    public void PlayWaveSplash(AudioSource source = null) => Play(source ?? GetMainSource(), waveSplash);
     
 
     // ============================================================

@@ -97,7 +97,12 @@ public class StageManager : MonoBehaviour
             targetAchieved = true;
             if (GameManager.Instance.highestStage < stageSummons.Length)
             {
-                UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
+                if(GameManager.Instance.currentProgress == GameManager.Instance.targetProgress)
+                {
+                    UIManager.Instance.WaveSurrenderPanel.GetComponent<SurrenderScript>().ActiveButton();
+                    isSummonPhase = false;
+                    return;
+                }
             }
         }
     }
@@ -105,6 +110,7 @@ public class StageManager : MonoBehaviour
     void StartStage(int stageNumber)
     {
         isSummonPhase = true;
+        DeleteAllChildren();
 
         StageSummon stageData = stageSummons[stageNumber - 1];
 
@@ -134,6 +140,7 @@ public class StageManager : MonoBehaviour
     IEnumerator SummonPhaseCoroutine()
     {
         StageSummon stageData = stageSummons[currentStage - 1];
+        yield return new WaitForSeconds(1f); // Delay sebelum mulai summon
 
         while (isSummonPhase)
         {
@@ -159,6 +166,8 @@ public class StageManager : MonoBehaviour
 
     private IEnumerator RunStageWavesByIndex(int[] waveIndices)
     {
+        DeleteAllChildren();
+        BGMManager.Instance.ToggleBGM();
         foreach (int waveIndex in waveIndices)
         {
             // Validasi index
@@ -181,6 +190,8 @@ public class StageManager : MonoBehaviour
 
     public void FailedWave()
     {
+        DeleteAllChildren();
+        BGMManager.Instance.ToggleBGM();
         SlideStageScript.Instance.SlidePlay(UIManager.Instance.waveFailedFrame, 15f, 1f, false);
         Debug.Log("💀 Wave Failed! Returning to summon phase...");
 
@@ -202,6 +213,7 @@ public class StageManager : MonoBehaviour
 
         // Return to summon phase
         isSummonPhase = true;
+        UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
         summonCoroutine = StartCoroutine(SummonPhaseCoroutine());
     }
 
@@ -255,6 +267,7 @@ public class StageManager : MonoBehaviour
 
     public void OnWaveComplete()
     {
+        BGMManager.Instance.ToggleBGM();
         UIManager.Instance.WaveSurrenderPanel.GetComponent<SurrenderScript>().StopWave(false);
         SlideStageScript.Instance.SlidePlay(UIManager.Instance.waveFinishedFrame, 15f, 1f, false);
         Debug.Log($"🏆 Stage {currentStage} cleared!");
@@ -286,6 +299,14 @@ public class StageManager : MonoBehaviour
         }
 
         StartStage(currentStage);
+    }
+
+    public void DeleteAllChildren()
+    {
+        for (int i = ObjectManager.Instance.enemySpawn.transform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(ObjectManager.Instance.enemySpawn.transform.GetChild(i).gameObject);
+        }
     }
 
     // Helpers for scaled stats

@@ -33,7 +33,7 @@ public enum CreatureType
 {
     Unagi,
     Crab,
-    Jelly,
+    Puffer,
     Turtle
 }
 
