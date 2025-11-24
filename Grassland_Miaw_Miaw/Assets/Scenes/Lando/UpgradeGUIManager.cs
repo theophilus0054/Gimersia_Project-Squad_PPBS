@@ -23,6 +23,12 @@ public class UpgradeGUIManager : MonoBehaviour
     public int currentIndex = 0;
     private UpgradeData currentUpgrade;
 
+    [Header("Land Expansion")]
+    public GameObject[] landExpansion1Prefab;
+    public GameObject[] landExpansion2Prefab;
+    public GameObject[] landExpansion3Prefab;
+    public GameObject[] landExpansion4Prefab;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -42,13 +48,14 @@ public class UpgradeGUIManager : MonoBehaviour
             currentUpgrade.isPurchased = true;
             CheckCost();
             UpdateUpgrades();
+            GameManager.Instance.SaveData();
         }
     }
 
     void Start()
     {
         ClearAllText();
-        UpdateUpgrades();
+        GameManager.Instance.LoadData();
         // bisa aktifin kalau mau langsung tampil:
         // ShowUpgradeByIndex(currentIndex);
     }
@@ -150,6 +157,19 @@ public class UpgradeGUIManager : MonoBehaviour
                     }
                 }
                 break;
+            case 3:
+                landExpansionUpgrade(landExpansion1Prefab);
+                break;
+            case 4:
+                landExpansionUpgrade(landExpansion2Prefab);
+                break;
+            case 5:
+                landExpansionUpgrade(landExpansion3Prefab);
+                break;
+            case 6:
+                landExpansionUpgrade(landExpansion4Prefab);
+                break;
+                
         }
 
         Debug.Log($"{upgrade.name} applied!");
@@ -165,5 +185,13 @@ public class UpgradeGUIManager : MonoBehaviour
             return (value / 1_000f).ToString("0.#") + "K";
 
         return value.ToString();
+    }
+
+    public void landExpansionUpgrade(GameObject[] objects)
+    {
+        foreach (GameObject obj in objects)
+        {
+            obj.SetActive(true);
+        }
     }
 }

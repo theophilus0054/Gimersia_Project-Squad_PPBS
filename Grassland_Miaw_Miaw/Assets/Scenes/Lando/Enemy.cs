@@ -90,7 +90,6 @@ public class Enemy : MonoBehaviour, IDamageable
         if (IsDead) return;
 
         hp -= amount;
-        AudioManager.Instance.PlayBubble(gameObject.GetComponent<AudioSource>());
         Debug.Log($"Enemy {name} took {amount} damage. ({hp}/{maxHP})");
 
         if (flashRoutine != null)

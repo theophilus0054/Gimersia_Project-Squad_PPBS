@@ -5,12 +5,14 @@ public class Projectile : MonoBehaviour
 {
     public float speed = 6f;
     public float damage = 10;
+    int indexEvo = 0;
     Effect projectileType;
     private Transform target;
 
     // dipanggil waktu peluru dibuat
     public void Init(Transform targetTransform, int index, Effect type)
     {
+        indexEvo = index;
         target = targetTransform;
         speed = EvolutionManager.Instance.GetEvolution(index).projectileSpeed;
         damage = EvolutionManager.Instance.GetEvolution(index).atk;
@@ -38,7 +40,6 @@ public class Projectile : MonoBehaviour
             var dmgComp = other.GetComponent<IDamageable>();
             if (dmgComp != null)
             {
-                AudioManager.Instance.PlayBubble(gameObject.GetComponent<AudioSource>());
                 if (projectileType == Effect.Slow)
                 {
                     dmgComp.TakeDamage(damage, Effect.Slow);
@@ -48,6 +49,10 @@ public class Projectile : MonoBehaviour
                 }
             }
 
+            if(SummonGUIManager.Instance.allCreatures[indexEvo].type == CreatureType.Unagi)
+            {
+                AudioManager.Instance.PlayBubble();
+            }
             // hancurkan peluru setelah kena
             Destroy(gameObject);
         }

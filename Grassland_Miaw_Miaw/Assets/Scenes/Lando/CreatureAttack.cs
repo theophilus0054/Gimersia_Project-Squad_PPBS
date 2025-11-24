@@ -134,11 +134,21 @@
         }
 
         var projObj = Instantiate(projectilePrefab, fireOrigin.position, Quaternion.identity);
-        AudioManager.Instance.PlayUnagiBubble(gameObject.GetComponent<AudioSource>());
         Projectile p = projObj.GetComponent<Projectile>();
         if (p != null)
         {
             int evoIndex = GetComponent<DragScript>().evolutionIndex;
+            if(SummonGUIManager.Instance.allCreatures[evoIndex].type == CreatureType.Unagi)
+            {
+                AudioManager.Instance.PlayUnagiBubble(gameObject.GetComponent<AudioSource>());
+            } else if (SummonGUIManager.Instance.allCreatures[evoIndex].type == CreatureType.Crab)
+            {
+                AudioManager.Instance.PlayCrabPinch(gameObject.GetComponent<AudioSource>());
+            } else if (SummonGUIManager.Instance.allCreatures[evoIndex].type == CreatureType.Puffer)
+            {
+                AudioManager.Instance.PlayPuffBloat(gameObject.GetComponent<AudioSource>());
+            }
+            
             if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.Slow)
             {
                 p.Init(target, evoIndex, Effect.Slow);

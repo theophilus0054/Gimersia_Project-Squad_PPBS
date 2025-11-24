@@ -8,6 +8,8 @@ public class AudioManager : MonoBehaviour
     [Header("Clips")]
     public AudioClip bubblePop;
     public AudioClip unagiBubble;
+    public AudioClip crabPinch;
+    public AudioClip puffBloat;
     public AudioClip enemyDead;
     public AudioClip buyInteraction;
     public AudioClip deniedInteraction;
@@ -89,6 +91,8 @@ public class AudioManager : MonoBehaviour
     // ============================================================
     public void PlayBubble(AudioSource source = null) => Play(source ?? GetMainSource(), bubblePop);
     public void PlayUnagiBubble(AudioSource source = null) => Play(source ?? GetMainSource(), unagiBubble);
+    public void PlayCrabPinch(AudioSource source = null) => Play(source ?? GetMainSource(), crabPinch);
+    public void PlayPuffBloat(AudioSource source = null) => Play(source ?? GetMainSource(), puffBloat);
     public void PlayEnemyDead(AudioSource source = null) => Play(source ?? GetMainSource(), enemyDead);
     public void PlayBuyInteraction(AudioSource source = null) => Play(source ?? GetMainSource(), buyInteraction);
     public void PlayDeniedInteraction(AudioSource source = null) => Play(source ?? GetMainSource(), deniedInteraction);

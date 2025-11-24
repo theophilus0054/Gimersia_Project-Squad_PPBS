@@ -97,7 +97,7 @@ public class BGMManager : MonoBehaviour
         if (!isPlayingFirst)
         {
             AudioManager.Instance.PlayWaveSplash();
-            SlideStageScript.Instance.SlidePlay(UIManager.Instance.waveNotificationPanel, 15f, 1f, false);
+            SlideStageScript.Instance.SlidePlay(UIManager.Instance.waveNotificationPanel, 20f, 2f, false);
             yield return new WaitForSeconds(2f);
         }
 

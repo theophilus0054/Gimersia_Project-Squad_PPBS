@@ -67,7 +67,11 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        if(UpgradeGUIManager.Instance != null)
+            UpgradeGUIManager.Instance.UpdateUpgrades();
         LoadGrid();
+        IsUnlocked(15);
+        IsUnlocked(30);
 
         if (UIManager.Instance != null)
             UIManager.Instance.coinText.text = ScaleNumber(totalCoins);
@@ -274,6 +278,17 @@ public class GameManager : MonoBehaviour
         creaturePurchaseCount.Clear();
         for (int i = 0; i < data.creaturePurchaseKeys.Count; i++)
             creaturePurchaseCount[data.creaturePurchaseKeys[i]] = data.creaturePurchaseValues[i];
+
+        if (UpgradeGUIManager.Instance != null)
+        {
+            foreach (var upgrade in UpgradeGUIManager.Instance.allUpgrades)
+                upgrade.isPurchased = false;
+
+            foreach (int i in data.purchasedUpgrade)
+                UpgradeGUIManager.Instance.allUpgrades[i].isPurchased = true;
+
+            UpgradeGUIManager.Instance.UpdateUpgrades();
+        }
 
         // 🔥 DEBUG: Print isi dictionary
         Debug.Log("======== DICTIONARY PURCHASE COUNT ========");

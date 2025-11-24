@@ -12,21 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35e12fa270de9f14f8f8c51ef2b9e77d, type: 3}
   m_Name: PuffT2
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
-  index: 30
-  creatureName: Puffin
-  type: 1
+  index: 31
+  creatureName: Pale Puffin
+  type: 2
   range: Low
   damage: High
-  description: This timid pufferfish shakes whenever something moves nearby, puffing
-    up more out of panic than bravery.
-  cost: 800
-  hp: 600
-  atk: 10
+  description: "A pale, jittery little fish that inflates at the slightest movement.
+    Its soft, timid appearance is misleading\u2014its panic-puff spikes make it surprisingly
+    well-protected."
+  cost: 3000
+  hp: 1300
+  atk: 20
   atkSpeed: 0.5
   projectileSpeed: 6
   tileRange: 1
-  possibleEvolutions: []
-  tier: 1
+  possibleEvolutions:
+  - {fileID: 11400000, guid: d717da50389f29b439a8293ee29d8746, type: 2}
+  tier: 2
   effectsArray: []
-  summonPrefab: {fileID: 5847998885843973870, guid: 2b5b53c7c9ccbac4c8072d864f67772c, type: 3}
-  displayPrefab: {fileID: 5847998885843973870, guid: f04f80804e987b541ac1b35c43b1c654, type: 3}
+  summonPrefab: {fileID: 5847998885843973870, guid: 62787a26cc6382b4989104c1ae666189, type: 3}
+  displayPrefab: {fileID: 5847998885843973870, guid: 16daf606ebf772442bb28debb1d86e77, type: 3}

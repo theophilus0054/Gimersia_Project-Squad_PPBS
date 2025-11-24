@@ -434,7 +434,7 @@ SpriteRenderer:
   m_SortingLayerID: 207456759
   m_SortingLayer: 3
   m_SortingOrder: 7
-  m_Sprite: {fileID: 21300000, guid: 1c4f0108bb16f2d43bb60be4862b6472, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 26370a657eea6c441ad80e2fab7c43e9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -505,7 +505,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   posX: 1
   posY: 1
-  evolutionIndex: 30
+  evolutionIndex: 32
 --- !u!114 &3611316938265853476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -561,7 +561,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 017816c890f6be74492038a37f1cbe67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Creature
-  data: {fileID: 11400000, guid: cfa25ad232751424c93ce5265b95903e, type: 2}
+  data: {fileID: 11400000, guid: d717da50389f29b439a8293ee29d8746, type: 2}
   reviveDelay: 10
 --- !u!82 &7938004045687277958
 AudioSource:
@@ -670,7 +670,7 @@ Animator:
   m_GameObject: {fileID: 5847998885843973870}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: e7c3345eec4d1744f9ce57470ed3b88e, type: 2}
+  m_Controller: {fileID: 9100000, guid: 0e4a9a6ce7ca1ab418ab862d0b022b86, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

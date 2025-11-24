@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   index: 30
   creatureName: Puffin
-  type: 1
+  type: 2
   range: Low
   damage: High
   description: This timid pufferfish shakes whenever something moves nearby, puffing
@@ -25,8 +25,9 @@ MonoBehaviour:
   atkSpeed: 0.5
   projectileSpeed: 6
   tileRange: 1
-  possibleEvolutions: []
+  possibleEvolutions:
+  - {fileID: 11400000, guid: 4327ab8e4554eba4d84addafcc5202e9, type: 2}
   tier: 1
   effectsArray: []
   summonPrefab: {fileID: 5847998885843973870, guid: 2b5b53c7c9ccbac4c8072d864f67772c, type: 3}
-  displayPrefab: {fileID: 5847998885843973870, guid: f04f80804e987b541ac1b35c43b1c654, type: 3}
+  displayPrefab: {fileID: 5847998885843973870, guid: fee8c2cf56e8b10409bb679a81d1cdb0, type: 3}
