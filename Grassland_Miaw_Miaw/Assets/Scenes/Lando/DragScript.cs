@@ -7,7 +7,7 @@ public class DragScript : MonoBehaviour
     private Vector3 startDragPosition;
     public int posX = 1;
     public int posY = 1;
-    private bool isDragging = false;
+    public bool isDragging = false;
 
     public int evolutionIndex = 0;
     
@@ -48,39 +48,41 @@ public class DragScript : MonoBehaviour
     private void TryStartDrag()
     {
         Vector2 mousePos = GetMousePosition();
-        
-        // Cek SEMUA collider di posisi mouse (bisa ada DropArea + DragScript overlap)
         Collider2D[] allHits = Physics2D.OverlapPointAll(mousePos);
-        
-        Debug.Log($"🖱️ Mouse at {mousePos}, found {allHits.Length} colliders");
-        
-        // Cari apakah ada DragScript di posisi mouse
-        // Prioritaskan DragScript daripada DropArea
+
         foreach (var hit in allHits)
         {
-            Debug.Log($"  - Hit: {hit.name} (tag: {hit.tag})");
-            
-            // Kalau ketemu collider ini, mulai drag
             if (hit == col)
             {
                 AudioManager.Instance.PlayPickupCreature();
                 startDragPosition = transform.position;
                 isDragging = true;
-                Debug.Log($"✅ Started dragging {name}");
+
+                // ⚡ Disable collider supaya tidak diserang
+                col.enabled = false;
+
+                // Opsional: disable script attack juga
+                var attack = GetComponent<CreatureAttack>();
+                if (attack != null)
+                    attack.enabled = false;
+
                 return;
             }
         }
-        
-        Debug.Log($"❌ This object not found at mouse position");
     }
+
 
     private void EndDrag()
     {
         isDragging = false;
-        Debug.Log($"🛑 Stopped dragging {name}");
-        
-        // ✅ Dapatkan SEMUA collider di posisi drop
-        col.enabled = false; // Disable dulu biar ga detect diri sendiri
+
+        // Re-enable collider
+        col.enabled = true;
+
+        // Re-enable attack script
+        var attack = GetComponent<CreatureAttack>();
+        if (attack != null)
+            attack.enabled = true;
         Collider2D[] allHits = Physics2D.OverlapPointAll(transform.position);
         col.enabled = true;
 

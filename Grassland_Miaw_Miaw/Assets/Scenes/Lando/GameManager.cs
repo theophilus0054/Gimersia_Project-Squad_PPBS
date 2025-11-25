@@ -69,7 +69,6 @@ public class GameManager : MonoBehaviour
     {
         if(UpgradeGUIManager.Instance != null)
             UpgradeGUIManager.Instance.UpdateUpgrades();
-        LoadGrid();
         IsUnlocked(15);
         IsUnlocked(30);
 

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using DG.Tweening;
 
 public class RevealScript : MonoBehaviour
 {
@@ -10,23 +11,23 @@ public class RevealScript : MonoBehaviour
     [Header("Reveal Settings")]
     public float moveDuration = 1.5f;
     public float scaleMultiplier = 2f;
-    public float clickFadeDuration = 1f;
+    public float clickFadeDuration = 1f; // tetap dipakai untuk fade light & sprite
     public float shakeDuration = 0.5f;
     public float shakeAngle = 10f;
-    public float animationZOffset = -5f;
     public GameObject whiteLightPrefab;
+
+    [Header("Target World Position")]
+    public Transform unlockSummon;
 
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
     private Vector3 originalPos;
     private Vector3 originalScale;
     private GameObject target;
-    private bool clicked = false;
+
+    private Coroutine currentRoutine;
     private Action onCompleteCallback;
 
-    // ===================================================
-    // 🧩 Singleton Setup
-    // ===================================================
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -36,8 +37,6 @@ public class RevealScript : MonoBehaviour
         }
 
         Instance = this;
-
-        Debug.Log($"✅ {name} diset untuk tetap hidup antar scene (tutorial sudah selesai).");
     }
 
     private void EnsureManager()
@@ -46,18 +45,38 @@ public class RevealScript : MonoBehaviour
             cam = Camera.main;
     }
 
-    // ===================================================
-    // 🎬 STATIC ENTRY POINTS
-    // ===================================================
     public void RevealPlay(GameObject targetObj, Action onComplete = null)
     {
         EnsureManager();
-        StartCoroutine(RevealSequence(targetObj, onComplete));
+
+        // Stop routine lama dan reset
+        if (currentRoutine != null)
+        {
+            StopCoroutine(currentRoutine);
+            ResetTargetState();
+        }
+
+        currentRoutine = StartCoroutine(RevealSequence(targetObj, onComplete));
     }
 
-    // ===================================================
-    // 🎥 REVEAL ANIMATION
-    // ===================================================
+    private void ResetTargetState()
+    {
+        if (target == null) return;
+
+        target.transform.DOKill();
+        spriteRenderer?.DOKill();
+        whiteLightPrefab?.transform.DOKill();
+
+        target.transform.position = originalPos;
+        target.transform.localScale = originalScale;
+
+        if (spriteRenderer != null)
+            spriteRenderer.color = originalColor;
+
+        if (whiteLightPrefab != null)
+            whiteLightPrefab.SetActive(false);
+    }
+
     private IEnumerator RevealSequence(GameObject targetObj, Action onComplete)
     {
         target = targetObj;
@@ -66,157 +85,87 @@ public class RevealScript : MonoBehaviour
         spriteRenderer = target.GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
         {
-            Debug.LogError("AnimationScript: Target tidak memiliki SpriteRenderer!");
+            Debug.LogError("Target tidak memiliki SpriteRenderer!");
             yield break;
         }
 
         originalColor = spriteRenderer.color;
         originalPos = target.transform.position;
         originalScale = target.transform.localScale;
-        clicked = false;
 
+        // Set awal warna hitam
         spriteRenderer.color = Color.black;
 
-        // Pindah ke tengah & membesar
-        Vector3 centerPos = cam.ScreenToWorldPoint(
-            new Vector3(Screen.width / 2, Screen.height / 2, -cam.transform.position.z)
-        );
-        centerPos.z = animationZOffset;
-
-        float t = 0f;
-        Vector3 startPos = target.transform.position;
-        Vector3 startScale = target.transform.localScale;
-        Vector3 endScale = startScale * scaleMultiplier;
-
-        while (t < moveDuration)
+        if (unlockSummon == null)
         {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0, 1, t / moveDuration);
-            target.transform.position = Vector3.Lerp(startPos, centerPos, progress);
-            target.transform.localScale = Vector3.Lerp(startScale, endScale, progress);
-            yield return null;
+            Debug.LogError("unlockSummon belum di-assign!");
+            yield break;
         }
 
-        // Tunggu klik
-        while (!clicked)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
-                Collider2D hit = Physics2D.OverlapPoint(mousePos);
+        // ===== MOVE TO TARGET + SCALE =====
+        target.transform.DOMove(unlockSummon.position, moveDuration).SetEase(Ease.InOutSine);
+        target.transform.DOScale(originalScale * scaleMultiplier, moveDuration).SetEase(Ease.OutBack);
 
-                if (hit && hit.gameObject == target)
-                {
-                    clicked = true;
-                    break;
-                }
-            }
-            yield return null;
-        }
+        yield return new WaitForSeconds(moveDuration);
 
-        // Efek klik (reveal)
-        yield return StartCoroutine(OnClickReveal());
+        // ===== REVEAL + SHAKE =====
+        yield return StartCoroutine(OnReveal());
 
-        // Kembali ke posisi semula
+        // ===== RETURN TO ORIGINAL =====
         yield return StartCoroutine(ReturnToOriginal());
 
         onCompleteCallback?.Invoke();
+        currentRoutine = null;
     }
 
-    private IEnumerator OnClickReveal()
+    private IEnumerator OnReveal()
     {
         SpriteRenderer lightSprite = null;
+
         if (whiteLightPrefab != null)
         {
             whiteLightPrefab.SetActive(true);
             lightSprite = whiteLightPrefab.GetComponent<SpriteRenderer>();
         }
+
         AudioManager.Instance.PlayUnlockNewCreature();
 
         if (lightSprite != null)
         {
-            Color lightColor = lightSprite.color;
-            lightColor.a = 0f;
-            lightSprite.color = lightColor;
+            lightSprite.color = new Color(1, 1, 1, 0);
 
-            float fadeInTime = 0f;
-            float fadeInDuration = clickFadeDuration * 0.5f;
-            while (fadeInTime < fadeInDuration)
-            {
-                fadeInTime += Time.deltaTime;
-                float alpha = Mathf.Lerp(0f, 1f, fadeInTime / fadeInDuration);
-                lightColor.a = alpha;
-                lightSprite.color = lightColor;
-                yield return null;
-            }
+            lightSprite.DOFade(1f, clickFadeDuration * 0.5f);
+            yield return new WaitForSeconds(clickFadeDuration * 0.5f);
 
-            float time = 0f;
-            while (time < clickFadeDuration)
-            {
-                time += Time.deltaTime;
-                float alpha = 1f - Mathf.PingPong(time * 2f, 0.5f);
-                lightColor.a = alpha;
-                lightSprite.color = lightColor;
-                yield return null;
-            }
+            lightSprite.DOFade(0.5f, 0.25f).SetLoops(4, LoopType.Yoyo);
+            yield return new WaitForSeconds(1f);
 
-            float fadeOutTime = 0f;
-            while (fadeOutTime < fadeInDuration)
-            {
-                fadeOutTime += Time.deltaTime;
-                float alpha = Mathf.Lerp(1f, 0f, fadeOutTime / fadeInDuration);
-                lightColor.a = alpha;
-                lightSprite.color = lightColor;
-                yield return null;
-            }
+            lightSprite.DOFade(0f, clickFadeDuration * 0.5f);
+            yield return new WaitForSeconds(clickFadeDuration * 0.5f);
         }
 
-        float t = 0f;
-        while (t < clickFadeDuration)
-        {
-            t += Time.deltaTime;
-            spriteRenderer.color = Color.Lerp(Color.black, originalColor, t / clickFadeDuration);
-            yield return null;
-        }
-        spriteRenderer.color = originalColor;
+        spriteRenderer.DOColor(originalColor, clickFadeDuration);
+        yield return new WaitForSeconds(clickFadeDuration);
 
         yield return StartCoroutine(ShakeObject());
+
         whiteLightPrefab?.SetActive(false);
         TutorialManager.Instance?.CompleteTutorial(15);
     }
 
     private IEnumerator ShakeObject()
     {
-        float t = 0f;
-        Quaternion originalRot = target.transform.rotation;
-
-        while (t < shakeDuration)
-        {
-            t += Time.deltaTime;
-            float angle = Mathf.Sin(t * Mathf.PI * 6f) * shakeAngle;
-            target.transform.rotation = originalRot * Quaternion.Euler(0, 0, angle);
-            yield return null;
-        }
-
-        target.transform.rotation = originalRot;
+        target.transform.DOShakeRotation(shakeDuration, new Vector3(0, 0, shakeAngle), 20, 90);
+        yield return new WaitForSeconds(shakeDuration);
     }
 
     private IEnumerator ReturnToOriginal()
     {
-        float t = 0f;
-        Vector3 startPos = target.transform.position;
-        Vector3 startScale = target.transform.localScale;
+        float returnDuration = moveDuration * 0.7f;
 
-        while (t < moveDuration * 0.7f)
-        {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0, 1, t / (moveDuration * 0.7f));
-            target.transform.position = Vector3.Lerp(startPos, originalPos, progress);
-            target.transform.localScale = Vector3.Lerp(startScale, originalScale, progress);
-            yield return null;
-        }
+        target.transform.DOMove(originalPos, returnDuration).SetEase(Ease.InOutSine);
+        target.transform.DOScale(originalScale, returnDuration).SetEase(Ease.InOutSine);
 
-        target.transform.position = originalPos;
-        target.transform.localScale = originalScale;
+        yield return new WaitForSeconds(returnDuration);
     }
 }

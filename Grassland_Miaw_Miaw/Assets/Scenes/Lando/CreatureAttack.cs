@@ -54,32 +54,35 @@
 
     void Update()
     {
-        Transform target = GetNearestEnemy();
+        // Cek dulu apakah sedang di-drag
+        var drag = GetComponent<DragScript>();
+        if (drag != null && drag.isDragging)
+            return; // skip attack saat drag
 
+        Transform target = GetNearestEnemy();
         if (target != null)
         {
-            // Jika target baru terdeteksi, beri delay sebelum menyerang
             if (!targetDetected)
             {
                 targetDetected = true;
-                fireCooldown = fireDelay; // delay pertama sebelum menyerang
+                fireCooldown = fireDelay;
             }
 
             fireCooldown -= Time.deltaTime;
 
             if (fireCooldown <= 0f)
             {
-                Debug.Log($"{name}: Anjay nembak {target.name}");
                 FireAt(target);
-                fireCooldown = fireDelay; // reset cooldown setelah menyerang
+                fireCooldown = fireDelay;
             }
         }
         else
         {
-            targetDetected = false; // reset flag jika tidak ada target
-            fireCooldown = 0f;      // optional reset cooldown
+            targetDetected = false;
+            fireCooldown = 0f;
         }
     }
+
         
 
     Transform GetNearestEnemy()
