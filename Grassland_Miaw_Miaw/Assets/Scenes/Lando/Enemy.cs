@@ -112,7 +112,7 @@ public class Enemy : MonoBehaviour, IDamageable
                     GameManager.Instance.AddStageProgress(pointProgression);
                     StageManager.Instance.UpdateTargetAchieved();
                 }
-                ObjectManager.Instance.SummonCoin(gameObject, Random.Range(baseCoin, Mathf.RoundToInt(baseCoin * 1.3f)));
+                ObjectManager.Instance.SummonCoinWithRandomOffset(gameObject, Random.Range(baseCoin, Mathf.RoundToInt(baseCoin * 1.3f)));
             }
             GetComponent<Animator>()?.SetTrigger("isDead");
             AudioManager.Instance.PlayEnemyDead(gameObject.GetComponent<AudioSource>());

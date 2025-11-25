@@ -69,8 +69,6 @@ public class GameManager : MonoBehaviour
     {
         if(UpgradeGUIManager.Instance != null)
             UpgradeGUIManager.Instance.UpdateUpgrades();
-        IsUnlocked(15);
-        IsUnlocked(30);
 
         if (UIManager.Instance != null)
             UIManager.Instance.coinText.text = ScaleNumber(totalCoins);
@@ -320,7 +318,7 @@ public class GameManager : MonoBehaviour
         unlockedIndex = new bool[100];
         unlockedIndex[0] = true;
         currentProgress = 0;
-        targetProgress = StageManager.Instance != null ? StageManager.Instance.stageSummons[0].stageTargetProgress : 10;
+        targetProgress = StageManager.Instance != null ? StageManager.Instance.stageDatabase.stages[0].stageTargetProgress : 10;
         creaturePurchaseCount.Clear();
 
         if (!finishedTutorial)

@@ -11,7 +11,7 @@ public class RevealScript : MonoBehaviour
     [Header("Reveal Settings")]
     public float moveDuration = 1.5f;
     public float scaleMultiplier = 2f;
-    public float clickFadeDuration = 1f; // tetap dipakai untuk fade light & sprite
+    public float clickFadeDuration = 1f;
     public float shakeDuration = 0.5f;
     public float shakeAngle = 10f;
     public GameObject whiteLightPrefab;
@@ -28,6 +28,15 @@ public class RevealScript : MonoBehaviour
     private Coroutine currentRoutine;
     private Action onCompleteCallback;
 
+    // ====================================================
+    // Cached components
+    // ====================================================
+    private CreatureAttack cachedAttack;
+    private DragScript cachedDrag;
+
+    // ====================================================
+    // Init
+    // ====================================================
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -35,7 +44,6 @@ public class RevealScript : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
     }
 
@@ -45,20 +53,103 @@ public class RevealScript : MonoBehaviour
             cam = Camera.main;
     }
 
+    // ====================================================
+    // Summon helper
+    // ====================================================
+    public GameObject SummonPrefab(GameObject prefab, Vector3 spawnPos)
+    {
+        GameObject icon = Instantiate(prefab, spawnPos, Quaternion.identity);
+
+        icon.transform.localScale = Vector3.one;
+        icon.transform.rotation = Quaternion.identity;
+        icon.transform.position = spawnPos;
+
+        return icon;
+    }
+
+    // ====================================================
+    // PUBLIC API
+    // ====================================================
     public void RevealPlay(GameObject targetObj, Action onComplete = null)
     {
         EnsureManager();
 
-        // Stop routine lama dan reset
         if (currentRoutine != null)
         {
+            InputLockManager.Instance.UnlockInput();
             StopCoroutine(currentRoutine);
             ResetTargetState();
         }
 
+        CacheAndDisableComponents(targetObj);
         currentRoutine = StartCoroutine(RevealSequence(targetObj, onComplete));
     }
 
+    public void RevealPlayInstantMove(GameObject targetObj, Action onComplete = null)
+    {
+        EnsureManager();
+
+        if (currentRoutine != null)
+        {
+            InputLockManager.Instance.UnlockInput();
+            StopCoroutine(currentRoutine);
+            ResetTargetState();
+        }
+
+        CacheAndDisableComponents(targetObj);
+        currentRoutine = StartCoroutine(RevealSequenceInstantMove(targetObj, onComplete));
+    }
+
+    public void RevealPlayInstantMoveDied(GameObject targetObj, Action onComplete = null)
+    {
+        EnsureManager();
+
+        if (currentRoutine != null)
+        {
+            InputLockManager.Instance.UnlockInput();
+            StopCoroutine(currentRoutine);
+            ResetTargetState();
+        }
+
+        CacheAndDisableComponents(targetObj);
+        currentRoutine = StartCoroutine(RevealSequenceInstantMoveDied(targetObj, onComplete));
+    }
+
+    // ====================================================
+    // COMPONENT CACHE/RESTORE
+    // ====================================================
+    private void CacheAndDisableComponents(GameObject obj)
+    {
+        cachedAttack = obj.GetComponent<CreatureAttack>();
+        cachedDrag = obj.GetComponent<DragScript>();
+
+        if (cachedAttack != null)
+        {
+            cachedAttack.enabled = false;
+        }
+
+        if (cachedDrag != null)
+        {
+            cachedDrag.enabled = false;
+            cachedDrag.col.enabled = false;
+        }
+    }
+
+    private void RestoreComponents()
+    {
+        if (cachedAttack != null)
+            cachedAttack.enabled = true;
+
+        if (cachedDrag != null)
+        {
+            cachedDrag.enabled = true;
+            cachedDrag.col.enabled = true;
+        }
+    }
+
+    // ====================================================
+    // RESET
+    // ====================================================
     private void ResetTargetState()
     {
         if (target == null) return;
@@ -75,49 +166,108 @@ public class RevealScript : MonoBehaviour
 
         if (whiteLightPrefab != null)
             whiteLightPrefab.SetActive(false);
+
+        // 🔥 restore komponen jika coroutine dihentikan
+        RestoreComponents();
     }
 
-    private IEnumerator RevealSequence(GameObject targetObj, Action onComplete)
+    // ====================================================
+    // INSTANT MOVE
+    // ====================================================
+    private IEnumerator RevealSequenceInstantMove(GameObject targetObj, Action onComplete)
     {
+        InputLockManager.Instance.LockInput();
         target = targetObj;
         onCompleteCallback = onComplete;
 
         spriteRenderer = target.GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
-        {
-            Debug.LogError("Target tidak memiliki SpriteRenderer!");
-            yield break;
-        }
-
         originalColor = spriteRenderer.color;
         originalPos = target.transform.position;
         originalScale = target.transform.localScale;
 
-        // Set awal warna hitam
         spriteRenderer.color = Color.black;
 
-        if (unlockSummon == null)
-        {
-            Debug.LogError("unlockSummon belum di-assign!");
-            yield break;
-        }
+        target.transform.position = unlockSummon.position;
 
-        // ===== MOVE TO TARGET + SCALE =====
+        target.transform.DOScale(originalScale * scaleMultiplier, moveDuration)
+            .SetEase(Ease.OutBack);
+
+        yield return new WaitForSeconds(moveDuration);
+
+        yield return StartCoroutine(OnReveal());
+        yield return StartCoroutine(ReturnToOriginal());
+
+        RestoreComponents(); // restore normal
+        onCompleteCallback?.Invoke();
+        currentRoutine = null;
+        InputLockManager.Instance.UnlockInput();
+        CreatureButtonManager.Instance.GenerateButtons();
+    }
+
+    private IEnumerator RevealSequenceInstantMoveDied(GameObject targetObj, Action onComplete)
+    {
+        InputLockManager.Instance.LockInput();
+        target = targetObj;
+        onCompleteCallback = onComplete;
+
+        spriteRenderer = target.GetComponent<SpriteRenderer>();
+        originalColor = spriteRenderer.color;
+        originalPos = target.transform.position;
+        originalScale = target.transform.localScale;
+
+        spriteRenderer.color = Color.black;
+
+        target.transform.position = unlockSummon.position;
+
+        target.transform.DOScale(originalScale * scaleMultiplier, moveDuration)
+            .SetEase(Ease.OutBack);
+
+        yield return new WaitForSeconds(moveDuration);
+
+        yield return StartCoroutine(OnReveal());
+
+        RestoreComponents(); // restore normal
+        onCompleteCallback?.Invoke();
+        currentRoutine = null;
+        InputLockManager.Instance.UnlockInput();
+        CreatureButtonManager.Instance.GenerateButtons();
+        Destroy(target);
+    }
+
+    // ====================================================
+    // MOVE + SCALE
+    // ====================================================
+    private IEnumerator RevealSequence(GameObject targetObj, Action onComplete)
+    {
+        InputLockManager.Instance.LockInput();
+        target = targetObj;
+        onCompleteCallback = onComplete;
+
+        spriteRenderer = target.GetComponent<SpriteRenderer>();
+        originalColor = spriteRenderer.color;
+        originalPos = target.transform.position;
+        originalScale = target.transform.localScale;
+
+        spriteRenderer.color = Color.black;
+
         target.transform.DOMove(unlockSummon.position, moveDuration).SetEase(Ease.InOutSine);
         target.transform.DOScale(originalScale * scaleMultiplier, moveDuration).SetEase(Ease.OutBack);
 
         yield return new WaitForSeconds(moveDuration);
 
-        // ===== REVEAL + SHAKE =====
         yield return StartCoroutine(OnReveal());
-
-        // ===== RETURN TO ORIGINAL =====
         yield return StartCoroutine(ReturnToOriginal());
 
+        RestoreComponents();
         onCompleteCallback?.Invoke();
         currentRoutine = null;
+        InputLockManager.Instance.UnlockInput();
+        TutorialManager.Instance?.CompleteTutorial(15);
     }
 
+    // ====================================================
+    // EFFECTS
+    // ====================================================
     private IEnumerator OnReveal()
     {
         SpriteRenderer lightSprite = null;
@@ -133,7 +283,6 @@ public class RevealScript : MonoBehaviour
         if (lightSprite != null)
         {
             lightSprite.color = new Color(1, 1, 1, 0);
-
             lightSprite.DOFade(1f, clickFadeDuration * 0.5f);
             yield return new WaitForSeconds(clickFadeDuration * 0.5f);
 
@@ -150,7 +299,6 @@ public class RevealScript : MonoBehaviour
         yield return StartCoroutine(ShakeObject());
 
         whiteLightPrefab?.SetActive(false);
-        TutorialManager.Instance?.CompleteTutorial(15);
     }
 
     private IEnumerator ShakeObject()

@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using System.Linq;
 
 public class UIManager : MonoBehaviour
 {
@@ -80,7 +81,7 @@ public class UIManager : MonoBehaviour
         if(stageNumber >= GameManager.Instance.highestStage)
         {
             stageNext.SetActive(false);
-            if(stageNumber >= StageManager.Instance.stageSummons.Length)
+            if(stageNumber >= StageManager.Instance.stageDatabase.stages.Count())
             {
                 WaveEndlessPanel.GetComponent<EndlessScript>().ActiveButton();
                 return;

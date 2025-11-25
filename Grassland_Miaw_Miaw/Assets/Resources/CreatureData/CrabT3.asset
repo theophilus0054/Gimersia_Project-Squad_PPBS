@@ -22,7 +22,7 @@ MonoBehaviour:
   cost: 10000
   hp: 500
   atk: 200
-  atkSpeed: 1
+  atkSpeed: 1.5
   projectileSpeed: 6
   tileRange: 1
   possibleEvolutions: []

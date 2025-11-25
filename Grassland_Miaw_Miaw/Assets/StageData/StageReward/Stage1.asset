@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5178766e2a95d99428c22f115d878145, type: 3}
+  m_Name: Stage1
+  m_EditorClassIdentifier: Assembly-CSharp::StageRewardData
+  rewards:
+  - stageNumber: 1
+    type: 0
+    value: 100
+    splitCount: 3
+  - stageNumber: 2
+    type: 0
+    value: 300
+    splitCount: 5
+  - stageNumber: 3
+    type: 1
+    value: 15
+    splitCount: 0
+  - stageNumber: 3
+    type: 0
+    value: 500
+    splitCount: 7
+  - stageNumber: 4
+    type: 0
+    value: 700
+    splitCount: 7
+  - stageNumber: 5
+    type: 0
+    value: 1000
+    splitCount: 10
+  - stageNumber: 6
+    type: 1
+    value: 30
+    splitCount: 0
+  - stageNumber: 6
+    type: 0
+    value: 2000
+    splitCount: 10
+  - stageNumber: 7
+    type: 0
+    value: 3000
+    splitCount: 12
+  - stageNumber: 8
+    type: 0
+    value: 5000
+    splitCount: 12
+  - stageNumber: 9
+    type: 0
+    value: 10000
+    splitCount: 12
+  - stageNumber: 4
+    type: 0
+    value: 500
+    splitCount: 7

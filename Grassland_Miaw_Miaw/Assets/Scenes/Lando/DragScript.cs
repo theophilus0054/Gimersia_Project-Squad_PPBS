@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class DragScript : MonoBehaviour
 {
-    private Collider2D col;
+    public Collider2D col;
     private Vector3 startDragPosition;
     public int posX = 1;
     public int posY = 1;
@@ -13,9 +14,13 @@ public class DragScript : MonoBehaviour
     
     private Camera mainCam;
 
-    void Start()
+    void Awake()
     {
         col = GetComponent<Collider2D>();
+    }
+
+    void Start()
+    {
         mainCam = Camera.main;
         
         if(col == null)
@@ -49,6 +54,7 @@ public class DragScript : MonoBehaviour
     {
         Vector2 mousePos = GetMousePosition();
         Collider2D[] allHits = Physics2D.OverlapPointAll(mousePos);
+        if(InputLockManager.Instance.IsLocked) return;
 
         foreach (var hit in allHits)
         {
@@ -173,30 +179,41 @@ public class DragScript : MonoBehaviour
             Debug.Log($"Hit collider: {col2.name}, tag: {col2.tag}");
             if (col2.TryGetComponent(out DragScript other) && other != this)
             {
-                if (other.evolutionIndex == this.evolutionIndex &&
-                    EvolutionManager.Instance.CanEvolveTo(evolutionIndex, evolutionIndex + 1))
+                if (other.evolutionIndex == this.evolutionIndex)
                 {
-                    Debug.Log($"🧬 Merge detected at ({dropArea.GetX()}, {dropArea.GetY()})!");
+                    if(EvolutionManager.Instance.CanEvolveTo(evolutionIndex, evolutionIndex + 1)){
+                        Debug.Log($"🧬 Merge detected at ({dropArea.GetX()}, {dropArea.GetY()})!");
 
-                    int nextEvolution = this.evolutionIndex + 1;
+                        int nextEvolution = this.evolutionIndex + 1;
 
-                    // kosongkan DropArea lama
-                    foreach (var col in oldColliders)
-                    {
-                        if (col.CompareTag("DropArea") && col.TryGetComponent(out IDragDrop leaveArea))
+                        // kosongkan DropArea lama
+                        foreach (var col in oldColliders)
                         {
-                            leaveArea.OnItemLeave(this);
-                            break;
+                            if (col.CompareTag("DropArea") && col.TryGetComponent(out IDragDrop leaveArea))
+                            {
+                                leaveArea.OnItemLeave(this);
+                                break;
+                            }
                         }
+
+                        Destroy(other.gameObject);
+                        Destroy(this.gameObject);
+
+                        AudioManager.Instance.PlayMergeCreature();
+                        SummonManager.SummonEvolution(nextEvolution, (DropArea)dropArea);
+                        merged = true;
+                        break;
                     }
-
-                    Destroy(other.gameObject);
-                    Destroy(this.gameObject);
-
-                    AudioManager.Instance.PlayMergeCreature();
-                    SummonManager.SummonEvolution(nextEvolution, (DropArea)dropArea);
-                    merged = true;
-                    break;
+                    else
+                    {
+                        GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
+                        obj.GetComponentInChildren<TextMeshProUGUI>().text = "Max Evolution!";
+                    }
+                } 
+                else
+                {
+                    GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
+                    obj.GetComponentInChildren<TextMeshProUGUI>().text = "Wrong evolution!";
                 }
             }
         }

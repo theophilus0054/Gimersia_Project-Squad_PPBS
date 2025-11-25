@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d719f97b7387f35479ee7b9b8f82ef5b, type: 3}
+  m_Name: Stage9
+  m_EditorClassIdentifier: Assembly-CSharp::StageSummon
+  stageName: Stage 9
+  stageTargetProgress: 60
+  enemyIndices: 0100000003000000050000000700000008000000090000000a0000000b0000000c000000
+  spawnChances:
+  - 5
+  - 5
+  - 5
+  - 5
+  - 10
+  - 10
+  - 25
+  - 15
+  - 20
+  hpMultiplier: 5
+  atkMultiplier: 5
+  coinsMultiplier: 15
+  spawnIntensity: 0.3
+  waveIndices: 060000000700000008000000
