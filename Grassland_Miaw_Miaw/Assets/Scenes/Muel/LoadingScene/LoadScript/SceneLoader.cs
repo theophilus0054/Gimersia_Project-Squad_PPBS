@@ -32,6 +32,7 @@ public class SceneLoader : MonoBehaviour
 
     private IEnumerator LoadSceneAsync()
     {
+        Time.timeScale = 1f;
         // ✅ Cek dulu apakah tutorial sudah selesai
         bool shouldShowTutorialChoice = GameManager.Instance != null && !GameManager.Instance.finishedTutorial;
         

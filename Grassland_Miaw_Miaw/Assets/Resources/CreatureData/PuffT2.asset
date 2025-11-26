@@ -17,9 +17,8 @@ MonoBehaviour:
   type: 2
   range: Low
   damage: High
-  description: "A pale, jittery little fish that inflates at the slightest movement.
-    Its soft, timid appearance is misleading\u2014its panic-puff spikes make it surprisingly
-    well-protected."
+  description: A pale, jittery little fish that inflates at the slightest movement.
+    its panic-puff spikes make it surprisingly well-protected.
   cost: 3000
   hp: 1300
   atk: 20

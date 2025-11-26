@@ -155,7 +155,16 @@
             if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.Slow)
             {
                 p.Init(target, evoIndex, Effect.Slow);
-            } else
+            } 
+            else if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.Bleed)
+            {
+                p.Init(target, evoIndex, Effect.Bleed);
+            } 
+            else if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.PufferAtk)
+            {
+                p.Init(target, evoIndex, Effect.PufferAtk);
+            }
+            else
             {
                 p.Init(target, evoIndex, Effect.None);
             }

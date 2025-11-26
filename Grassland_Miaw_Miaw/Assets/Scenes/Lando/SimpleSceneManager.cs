@@ -8,4 +8,9 @@ public class SimpleSceneManager : MonoBehaviour
     {
         SceneManager.LoadScene(sceneIndex);
     }
+
+    public void ResetGameData()
+    {
+        GameManager.Instance.ResetData(true);
+    }
 }

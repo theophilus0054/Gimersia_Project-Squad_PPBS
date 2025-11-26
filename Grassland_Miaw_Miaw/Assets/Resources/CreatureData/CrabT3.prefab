@@ -285,8 +285,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 009db275c7fc6a34b8f083403abff3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  col: {fileID: 0}
   posX: 1
   posY: 1
+  isDragging: 0
   evolutionIndex: 17
 --- !u!114 &3611316938265853476
 MonoBehaviour:
@@ -345,7 +347,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Creature
   data: {fileID: 11400000, guid: 8281705bb60fb784688f31d18b7afb13, type: 2}
-  reviveDelay: 10
+  reviveDelay: 15
 --- !u!82 &7938004045687277958
 AudioSource:
   m_ObjectHideFlags: 0

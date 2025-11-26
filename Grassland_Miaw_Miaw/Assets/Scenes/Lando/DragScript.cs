@@ -72,6 +72,8 @@ public class DragScript : MonoBehaviour
                 if (attack != null)
                     attack.enabled = false;
 
+                TrashManager.Instance.trashDropArea.SetActive(true);
+
                 return;
             }
         }
@@ -125,6 +127,7 @@ public class DragScript : MonoBehaviour
             Debug.LogWarning("No DropArea detected at drop position");
             transform.position = startDragPosition;
         }
+        TrashManager.Instance.trashDropArea.SetActive(false);
     }
 
     private void HandleNormalDrop(IDragDrop dropArea)

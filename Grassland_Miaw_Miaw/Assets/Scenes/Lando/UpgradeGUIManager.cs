@@ -24,6 +24,7 @@ public class UpgradeGUIManager : MonoBehaviour
     private UpgradeData currentUpgrade;
 
     [Header("Land Expansion")]
+    public int landExpansionLevel = 0;
     public GameObject[] landExpansion1Prefab;
     public GameObject[] landExpansion2Prefab;
     public GameObject[] landExpansion3Prefab;
@@ -130,6 +131,7 @@ public class UpgradeGUIManager : MonoBehaviour
 
     public void UpdateUpgrades()
     {
+        landExpansionLevel = 0;
         for (int i = 0; i < allUpgrades.Length; i++)
         {
             if (allUpgrades[i].isPurchased)
@@ -157,19 +159,52 @@ public class UpgradeGUIManager : MonoBehaviour
                     }
                 }
                 break;
-            case 3:
-                landExpansionUpgrade(landExpansion1Prefab);
+            case 1:
+                for (int i = 0; i < SummonGUIManager.Instance.allCreatures.Length; i++)
+                {
+                    CreatureData creature = SummonGUIManager.Instance.allCreatures[i];
+                    if (creature.type == CreatureType.Crab)
+                    {
+                        // Tambahkan efek Slow menggunakan AddEffect
+                        creature.AddEffect(new EffectData { effectType = Effect.Bleed, chanceToApply = 20f });
+                        
+                        // Sinkronkan ke array untuk Inspector (opsional, tergantung kebutuhan)
+                        creature.SyncEffectsToArray();
+                    }
+                }
                 break;
-            case 4:
-                landExpansionUpgrade(landExpansion2Prefab);
+            case 2:
+                for (int i = 0; i < SummonGUIManager.Instance.allCreatures.Length; i++)
+                {
+                    CreatureData creature = SummonGUIManager.Instance.allCreatures[i];
+                    if (creature.type == CreatureType.Puffer)
+                    {
+                        // Tambahkan efek Slow menggunakan AddEffect
+                        creature.AddEffect(new EffectData { effectType = Effect.PufferAtk, chanceToApply = 100f });
+                        
+                        // Sinkronkan ke array untuk Inspector (opsional, tergantung kebutuhan)
+                        creature.SyncEffectsToArray();
+                    }
+                }
                 break;
-            case 5:
-                landExpansionUpgrade(landExpansion3Prefab);
+            case 3: case 4: case 5: case 6:
+                switch(landExpansionLevel)
+                {
+                    case 0:
+                        landExpansionUpgrade(landExpansion1Prefab);
+                        break;
+                    case 1:
+                        landExpansionUpgrade(landExpansion2Prefab);
+                        break;
+                    case 2:
+                        landExpansionUpgrade(landExpansion3Prefab);
+                        break;
+                    case 3:
+                        landExpansionUpgrade(landExpansion4Prefab);
+                        break;
+                }
+                landExpansionLevel++;
                 break;
-            case 6:
-                landExpansionUpgrade(landExpansion4Prefab);
-                break;
-                
         }
 
         Debug.Log($"{upgrade.name} applied!");

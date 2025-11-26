@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Linq;
@@ -27,6 +28,41 @@ public class UIManager : MonoBehaviour
     public GameObject popupWarningSlot;
     public GameObject popupWarningPrefab;
     public GameObject popupFeatureIndex;
+
+    public Image objectBackground;   // Drag ke inspector
+    private bool isFastForward = false;
+
+
+    public void ToggleFastForward()
+    {
+        if (isFastForward)
+            TurnOffFastForward();
+        else
+            TurnOnFastForward();
+    }
+
+    public void TurnOnFastForward()
+    {
+        isFastForward = true;
+        Time.timeScale = 2f;
+        SetAlpha(objectBackground, 1f);
+    }
+
+    public void TurnOffFastForward()
+    {
+        isFastForward = false;
+        Time.timeScale = 1f;
+        SetAlpha(objectBackground, 0f);
+    }
+
+    private void SetAlpha(Image img, float alpha)
+    {
+        if (img == null) return;
+
+        Color c = img.color;
+        c.a = alpha;
+        img.color = c;
+    }
 
 
     private void Awake()
@@ -60,10 +96,16 @@ public class UIManager : MonoBehaviour
     {
         if (StageManager.Instance.isSummonPhase)
         {
-            WaveSurrenderPanel.GetComponent<SurrenderScript>().DeactivateButton();
+            if (WaveSurrenderPanel.GetComponent<SurrenderScript>() != null)
+            {
+                WaveSurrenderPanel.GetComponent<SurrenderScript>().DeactivateButton();
+            }
         } else
         {
-            WaveStagePanel.GetComponent<SlideButton>().DeactivateButton();
+            if (WaveStagePanel.GetComponent<SlideButton>() != null)
+            {
+                WaveStagePanel.GetComponent<SlideButton>().DeactivateButton();
+            }
         }
     }
 

@@ -15,7 +15,7 @@ MonoBehaviour:
   index: 2
   upgradeName: ThornArmor
   type: 0
-  description: Pufish now learn how to expand causing damage to enemy when trying
-    to attack it
+  description: Puffin can now defend themselves with spikes, harming any enemy that
+    dares to get too near.
   cost: 35000
-  isPurchased: 0
+  isPurchased: 1

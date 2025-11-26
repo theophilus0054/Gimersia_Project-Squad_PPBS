@@ -127,8 +127,21 @@ public class EnemyManager : MonoBehaviour
         float baseX = 10.3f;
         float baseY = 3.4075f;
         float offsetY = 1.6875f * (row - 1);
+        float basez = 0f - (0.1f * row); // untuk layering
 
-        Vector3 spawnPos = new Vector3(baseX, baseY - offsetY, 0f);
+        if(enemies[index].type == EnemyType.Normal)
+        {
+            basez -= 0.02f;
+        } else if(enemies[index].type == EnemyType.Fast)
+        {
+            basez -= 0.01f;
+        } 
+        else if(enemies[index].type == EnemyType.Tank)
+        {
+            basez -= 0.05f;
+        } 
+
+        Vector3 spawnPos = new Vector3(baseX, baseY - offsetY, basez);
 
         GameObject enemyObj = Instantiate(data.prefab, spawnPos, Quaternion.identity, ObjectManager.Instance.enemySpawn.transform);
 

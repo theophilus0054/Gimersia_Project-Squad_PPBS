@@ -127,6 +127,7 @@ public class SummonGUIManager : MonoBehaviour
         if (currentCreature == null) return false;
 
         int currentCost = GetCurrentCost(currentCreature);
+        if (costText) costText.text = $"Cost: {ScaleNumber(GetCurrentCost(currentCreature))}";
         bool cukup = GameManager.Instance.totalCoins >= currentCost;
 
         summonButton.color = cukup
@@ -175,7 +176,7 @@ public class SummonGUIManager : MonoBehaviour
 
 
     // 🔹 Rumus harga dinamis (tidak eksponensial)
-    private int GetCurrentCost(CreatureData creature)
+    public int GetCurrentCost(CreatureData creature)
     {
         int baseCost = creature.cost;
 

@@ -43,8 +43,21 @@ public class Projectile : MonoBehaviour
                 if (projectileType == Effect.Slow)
                 {
                     dmgComp.TakeDamage(damage, Effect.Slow);
-                } else
+                } else if (projectileType == Effect.Bleed)
                 {
+                    dmgComp.TakeDamage(damage, Effect.Bleed);
+                }
+                else if (projectileType == Effect.PufferAtk)
+                {
+                    dmgComp.TakeDamage(damage, Effect.PufferAtk);
+                }
+                else
+                {
+                    if(SummonGUIManager.Instance.allCreatures[indexEvo].type == CreatureType.Puffer)
+                    {
+                        Destroy(gameObject);
+                        return;
+                    }
                     dmgComp.TakeDamage(damage, Effect.None);
                 }
             }
@@ -52,6 +65,7 @@ public class Projectile : MonoBehaviour
             if(SummonGUIManager.Instance.allCreatures[indexEvo].type == CreatureType.Unagi)
             {
                 AudioManager.Instance.PlayBubble();
+                ParticleManager.Instance.SummonParticleWater(gameObject, 0.5f);
             }
             // hancurkan peluru setelah kena
             Destroy(gameObject);

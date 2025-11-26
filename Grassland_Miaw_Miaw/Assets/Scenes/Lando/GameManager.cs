@@ -35,6 +35,7 @@ public class GameManager : MonoBehaviour
     [Header("Progress")]
     public int currentProgress { get; private set; }
     public int targetProgress { get; private set; }
+    public int[] purchasedUpgrade;
 
     [Header("Purchases")]
     public Dictionary<int, int> creaturePurchaseCount = new Dictionary<int, int>();
@@ -276,16 +277,37 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < data.creaturePurchaseKeys.Count; i++)
             creaturePurchaseCount[data.creaturePurchaseKeys[i]] = data.creaturePurchaseValues[i];
 
+        if (SummonGUIManager.Instance != null)
+        {
+            foreach (CreatureData creature in SummonGUIManager.Instance.allCreatures)
+            {
+                creature.Effects.Clear();
+                creature.SyncEffectsToArray();
+            }
+        }
+
         if (UpgradeGUIManager.Instance != null)
         {
+            // clear first
             foreach (var upgrade in UpgradeGUIManager.Instance.allUpgrades)
                 upgrade.isPurchased = false;
 
-            foreach (int i in data.purchasedUpgrade)
-                UpgradeGUIManager.Instance.allUpgrades[i].isPurchased = true;
+            // defensive: data.purchasedUpgrade bisa null
+            if (data.purchasedUpgrade != null)
+            {
+                for (int idx = 0; idx < data.purchasedUpgrade.Length; idx++)
+                {
+                    int i = data.purchasedUpgrade[idx];
+                    if (i >= 0 && i < UpgradeGUIManager.Instance.allUpgrades.Length)
+                        UpgradeGUIManager.Instance.allUpgrades[i].isPurchased = true;
+                    else
+                        Debug.LogWarning($"Saved purchasedUpgrade index out of range: {i}");
+                }
+            }
 
             UpgradeGUIManager.Instance.UpdateUpgrades();
         }
+
 
         // 🔥 DEBUG: Print isi dictionary
         Debug.Log("======== DICTIONARY PURCHASE COUNT ========");
@@ -306,7 +328,7 @@ public class GameManager : MonoBehaviour
     }
 
 
-    public void ResetData()
+    public void ResetData(bool deleteObject = false)
     {
         totalCoins = 10;
         highestStage = 1;
@@ -321,17 +343,13 @@ public class GameManager : MonoBehaviour
         targetProgress = StageManager.Instance != null ? StageManager.Instance.stageDatabase.stages[0].stageTargetProgress : 10;
         creaturePurchaseCount.Clear();
 
-        if (!finishedTutorial)
-        {
-            Debug.Log("🚫 Tutorial belum selesai — data tidak direset penuh.");
-            return;
-        }
 
         if (UpgradeGUIManager.Instance != null)
         {
             foreach (UpgradeData upgrade in UpgradeGUIManager.Instance.allUpgrades)
                 upgrade.isPurchased = false;
         }
+
 
         if (SummonGUIManager.Instance != null)
         {
@@ -342,7 +360,22 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        SaveData();
+        if (finishedTutorial)
+        {
+            SaveData();
+        }
+
+
+        if(deleteObject)
+        {
+            File.Delete(savePath);
+            Destroy(gameObject);
+            Debug.Log("🗑️ GameManager di-reset dan dihapus.");
+        }
+        else
+        {
+            Debug.Log("♻️ GameManager di-reset ke data awal.");
+        }
     }
 
     public void CompleteTutorial()

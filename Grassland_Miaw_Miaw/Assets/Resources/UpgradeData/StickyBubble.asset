@@ -15,7 +15,7 @@ MonoBehaviour:
   index: 0
   upgradeName: Sticky Bubble
   type: 0
-  description: unagi now have a chance to slow enemy for 3 second (Slow -> decreased
-    enemy movement speed by 30%)
+  description: 'unagi now have a chance to slow enemy for 3 second \n(Slow : decreased
+    enemy movement speed by 30%)'
   cost: 500
   isPurchased: 0
