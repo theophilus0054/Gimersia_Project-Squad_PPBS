@@ -18,4 +18,4 @@ MonoBehaviour:
   description: 'Crabbo now can cause bleeding on enemy causing them to bleed for
     3 secs \n(Bleed : decreased hp by 5% of attackers damage every seconds)'
   cost: 10000
-  isPurchased: 1
+  isPurchased: 0

@@ -18,4 +18,4 @@ MonoBehaviour:
   description: Puffin can now defend themselves with spikes, harming any enemy that
     dares to get too near.
   cost: 35000
-  isPurchased: 1
+  isPurchased: 0

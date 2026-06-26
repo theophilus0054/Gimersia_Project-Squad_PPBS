@@ -22,10 +22,29 @@ public class CameraController : MonoBehaviour
             mainCamera = Camera.main;
     }
 
+    IEnumerator WatchResolution()
+    {
+        int w = Screen.width;
+        int h = Screen.height;
+
+        while (true)
+        {
+            if (Screen.width != w || Screen.height != h)
+            {
+                w = Screen.width;
+                h = Screen.height;
+                ApplyAspect();
+            }
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
     void Start()
     {
         ApplyAspect();
+        StartCoroutine(WatchResolution());
     }
+
 
     void ApplyAspect()
     {

@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-        savePath = Application.persistentDataPath + "/gamedata.json";
+        savePath = Application.persistentDataPath + "/gamedatas.json";
 
         LoadData();
 
