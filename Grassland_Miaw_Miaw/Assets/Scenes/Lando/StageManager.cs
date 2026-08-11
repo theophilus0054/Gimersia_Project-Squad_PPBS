@@ -3,56 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-[System.Serializable]
-public class StageSummon
-{
-    [Header("Stage Info")]
-    public string stageName;
-    public int stageTargetProgress = 100;
-
-    [Header("Enemies")]
-    public int[] enemyIndices;
-    [Range(0f, 100f)]
-    public float[] spawnChances;
-
-    [Header("Stage Multipliers")]
-    public float hpMultiplier = 1f;
-    public float atkMultiplier = 1f;
-    public float coinsMultiplier = 1f;
-    public float spawnIntensity = 0.1f;
-
-    [Header("Wave References")]
-    public int[] waveIndices; // << Index ke WaveManager.waves
-
-    public int GetRandomEnemyIndex()
-    {
-        if (enemyIndices.Length == 0 || spawnChances.Length != enemyIndices.Length)
-        {
-            Debug.LogError("StageSummon: enemyIndices and spawnChances mismatch or empty!");
-            return -1;
-        }
-
-        float total = spawnChances.Sum();
-        float rand = Random.Range(0f, total);
-        float cumulative = 0f;
-
-        for (int i = 0; i < enemyIndices.Length; i++)
-        {
-            cumulative += spawnChances[i];
-            if (rand <= cumulative)
-                return enemyIndices[i];
-        }
-
-        return enemyIndices[0]; // fallback
-    }
-}
-
 public class StageManager : MonoBehaviour
 {
     public static StageManager Instance { get; private set; }
 
-    [Header("Stage Settings")]
-    public StageSummon[] stageSummons;
+    [Header("Stage Settings (ScriptableObject)")]
+    public StageDatabase stageDatabase; // << database berisi semua stage
+
+    StageSummon CurrentStageSO => stageDatabase.stages[currentStage - 1];
 
     [Header("References")]
     public WaveManager waveManager;
@@ -67,11 +25,14 @@ public class StageManager : MonoBehaviour
     public bool isSummonPhase = false;
     public bool targetAchieved = false;
 
-    // Multipliers for current stage
+    // multipliers
     private float hpMultiplier = 1f;
     private float atkMultiplier = 1f;
     private float coinsMultiplier = 1f;
     private float spawnIntensity = 0.1f;
+
+    Coroutine summonCoroutine;
+    Coroutine currentWaveCoroutine;
 
     void Awake()
     {
@@ -85,17 +46,30 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
+        if (UpgradeGUIManager.Instance != null)
+        {
+            UpgradeGUIManager.Instance.UpdateUpgrades();
+            GameManager.Instance.LoadGrid();
+        }
+        currentStage = GameManager.Instance.highestStage;
+        UIManager.Instance.UpdateStageText(currentStage);
         StartStage(currentStage);
     }
 
     public void UpdateTargetAchieved()
     {
-        if(GameManager.Instance.currentProgress >= GameManager.Instance.targetProgress && !targetAchieved)
+        if (GameManager.Instance.currentProgress >= GameManager.Instance.targetProgress && !targetAchieved)
         {
             targetAchieved = true;
-            if (GameManager.Instance.highestStage < stageSummons.Length)
+
+            if (GameManager.Instance.highestStage < stageDatabase.stages.Length)
             {
-                UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
+                if (GameManager.Instance.currentProgress == GameManager.Instance.targetProgress)
+                {
+                    UIManager.Instance.WaveSurrenderPanel.GetComponent<SurrenderScript>().ActiveButton();
+                    isSummonPhase = false;
+                    return;
+                }
             }
         }
     }
@@ -103,18 +77,18 @@ public class StageManager : MonoBehaviour
     void StartStage(int stageNumber)
     {
         isSummonPhase = true;
+        DeleteAllChildren();
 
-        StageSummon stageData = stageSummons[stageNumber - 1];
+        StageSummon stageData = CurrentStageSO;
 
-        // Apply stage-specific multipliers
         hpMultiplier = stageData.hpMultiplier;
         atkMultiplier = stageData.atkMultiplier;
         coinsMultiplier = stageData.coinsMultiplier;
         spawnIntensity = stageData.spawnIntensity;
 
-        // Initialize row weights
         rowWeights = new Dictionary<int, double>();
         pickedRowsThisCycle = new HashSet<int>();
+
         for (int i = 0; i < totalRows; i++)
             rowWeights[i] = 1.0;
 
@@ -127,11 +101,11 @@ public class StageManager : MonoBehaviour
         summonCoroutine = StartCoroutine(SummonPhaseCoroutine());
     }
 
-    Coroutine summonCoroutine;
-
     IEnumerator SummonPhaseCoroutine()
     {
-        StageSummon stageData = stageSummons[currentStage - 1];
+        StageSummon stageData = CurrentStageSO;
+
+        yield return new WaitForSeconds(1f);
 
         while (isSummonPhase)
         {
@@ -143,9 +117,8 @@ public class StageManager : MonoBehaviour
             yield return new WaitForSeconds(0.5f / spawnIntensity);
         }
 
-        Debug.Log("✅ Summon phase completed, start stage waves!");
+        Debug.Log("Summon Phase Completed");
 
-        // Run waves using indices from WaveManager
         if (stageData.waveIndices != null && stageData.waveIndices.Length > 0)
         {
             currentWaveCoroutine = StartCoroutine(RunStageWavesByIndex(stageData.waveIndices));
@@ -153,36 +126,38 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    private Coroutine currentWaveCoroutine;
-
     private IEnumerator RunStageWavesByIndex(int[] waveIndices)
     {
+        DeleteAllChildren();
+        BGMManager.Instance.ToggleBGM();
+
         foreach (int waveIndex in waveIndices)
         {
-            // Validasi index
-            if (waveIndex < 0 || waveIndex >= waveManager.waves.Count)
+            if (waveIndex < 0 || waveIndex >= waveManager.waveSet.waves.Count)
             {
-                Debug.LogError($"❌ Invalid wave index: {waveIndex}");
+                Debug.LogError($"Invalid wave index: {waveIndex}");
                 continue;
             }
 
-            Wave wave = waveManager.waves[waveIndex];
-            Debug.Log($"🌊 Starting Wave {waveIndex}: {wave.waveName}");
+            WaveData wave = waveManager.waveSet.waves[waveIndex];
+            Debug.Log($"Starting Wave {waveIndex}: {wave.waveName}");
 
             yield return StartCoroutine(waveManager.SpawnWave(wave));
             yield return new WaitForSeconds(wave.delayBeforeNextWave);
         }
 
-        Debug.Log($"🏆 Stage {currentStage} waves completed!");
+        Debug.Log($"Stage {currentStage} waves completed!");
         OnWaveComplete();
     }
 
     public void FailedWave()
     {
+        DeleteAllChildren();
+        BGMManager.Instance.ToggleBGM();
         SlideStageScript.Instance.SlidePlay(UIManager.Instance.waveFailedFrame, 15f, 1f, false);
-        Debug.Log("💀 Wave Failed! Returning to summon phase...");
 
-        // Stop current wave coroutine
+        Debug.Log("Wave Failed!");
+
         if (currentWaveCoroutine != null)
         {
             StopCoroutine(currentWaveCoroutine);
@@ -195,11 +170,10 @@ public class StageManager : MonoBehaviour
             summonCoroutine = null;
         }
 
-        // Stop all wave spawning in WaveManager
         waveManager.StopAllCoroutines();
 
-        // Return to summon phase
         isSummonPhase = true;
+        UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
         summonCoroutine = StartCoroutine(SummonPhaseCoroutine());
     }
 
@@ -229,9 +203,9 @@ public class StageManager : MonoBehaviour
 
         pickedRowsThisCycle.Add(chosenRow);
 
-        // Adjust weights
         double decreaseFactor = 0.5;
         double increaseBoost = 0.2;
+
         foreach (var key in rowWeights.Keys.ToList())
         {
             if (key == chosenRow)
@@ -253,19 +227,24 @@ public class StageManager : MonoBehaviour
 
     public void OnWaveComplete()
     {
+        BGMManager.Instance.ToggleBGM();
         UIManager.Instance.WaveSurrenderPanel.GetComponent<SurrenderScript>().StopWave(false);
         SlideStageScript.Instance.SlidePlay(UIManager.Instance.waveFinishedFrame, 15f, 1f, false);
-        Debug.Log($"🏆 Stage {currentStage} cleared!");
+
+        RewardManager.Instance.GiveStageReward(currentStage);
+
+        Debug.Log($"Stage {currentStage} cleared!");
         NextStage();
     }
 
     public void NextStage()
     {
         currentStage++;
-        if (currentStage > stageSummons.Length)
+
+        if (currentStage > stageDatabase.stages.Length)
         {
-            Debug.Log("🎯 All stages completed!");
-            currentStage = stageSummons.Length;
+            Debug.Log("All stages completed!");
+            currentStage = stageDatabase.stages.Length;
         }
         else
         {
@@ -273,20 +252,24 @@ public class StageManager : MonoBehaviour
             UIManager.Instance.UpdateStageText(currentStage);
         }
 
-        if(currentStage > GameManager.Instance.highestStage)
+        if (currentStage > GameManager.Instance.highestStage)
         {
-            Debug.Log("🔄 New stage reached, resetting progress.");
             GameManager.Instance.UpdateHighestStage(currentStage);
-            GameManager.Instance.SetStageProgress(0, stageSummons[currentStage - 1].stageTargetProgress, true);
-        } else
-        {
-            Debug.Log($"gabisa stage {currentStage} <= highest {GameManager.Instance.highestStage}");
+            GameManager.Instance.SetStageProgress(0, CurrentStageSO.stageTargetProgress, true);
         }
 
         StartStage(currentStage);
     }
 
-    // Helpers for scaled stats
+    public void DeleteAllChildren()
+    {
+        for (int i = ObjectManager.Instance.enemySpawn.transform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(ObjectManager.Instance.enemySpawn.transform.GetChild(i).gameObject);
+        }
+    }
+
+    // Scaled stats
     public float GetScaledHP(float baseHP) => baseHP * hpMultiplier;
     public float GetScaledATK(float baseATK) => baseATK * atkMultiplier;
     public int GetScaledCoins(int baseCoins) => Mathf.RoundToInt(baseCoins * coinsMultiplier);

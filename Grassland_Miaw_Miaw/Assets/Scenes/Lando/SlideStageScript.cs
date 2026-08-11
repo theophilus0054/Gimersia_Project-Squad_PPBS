@@ -1,29 +1,25 @@
 using UnityEngine;
 using System;
-using System.Collections;
+using System.Collections.Generic;
+using DG.Tweening;
 
 public class SlideStageScript : MonoBehaviour
 {
     public static SlideStageScript Instance { get; private set; }
     private static Camera cam;
 
-    [Header("Slide Settings")]
-    private GameObject target;
+    // Simpan posisi awal tiap target
+    private Dictionary<GameObject, Vector3> startPositions = new Dictionary<GameObject, Vector3>();
 
-    // ===================================================
-    // 🧩 Singleton Setup
-    // ===================================================
     void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance != this && Instance != null)
         {
             Destroy(gameObject);
             return;
         }
 
         Instance = this;
-
-        Debug.Log($"✅ {name} diset untuk tetap hidup antar scene (tutorial sudah selesai).");
     }
 
     private void EnsureManager()
@@ -33,73 +29,59 @@ public class SlideStageScript : MonoBehaviour
     }
 
     // ===================================================
-    // 🎬 STATIC ENTRY POINTS
+    // 🎬 ENTRY
     // ===================================================
-    public void SlidePlay(GameObject targetObj, float distance = 5f, float duration = 2f, bool easeOutExit = true, Action onComplete = null)
+    public void SlidePlay(GameObject target, float distance = 5f, float duration = 2f,
+        bool easeOutExit = true, Action onComplete = null)
     {
         EnsureManager();
-        StartCoroutine(SlideSequence(targetObj, distance, duration, easeOutExit, onComplete));
+        RunSlideSequence(target, distance, duration, easeOutExit, onComplete);
     }
 
     // ===================================================
-    // 🎞️ SLIDE ANIMATION
+    // 🎞️ DOTWEEN SLIDE
     // ===================================================
-
-    private IEnumerator SlideSequence(GameObject targetObj, float distance, float duration, bool easeOutExit, Action onComplete)
+    private void RunSlideSequence(GameObject target, float distance, float duration,
+        bool easeOutExit, Action onComplete)
     {
-        target = targetObj;
-        Vector3 start = target.transform.position;
-        Vector3 middle = target.transform.position - Vector3.right * distance;
-        Vector3 end = target.transform.position - (Vector3.right * distance * 2f);
+        // Simpan posisi awal jika belum ada
+        if (!startPositions.ContainsKey(target))
+            startPositions[target] = target.transform.position;
 
-        // Geser kanan → tengah (cepat → lambat)
-        float t = 0f;
-        while (t < duration / 2f)
-        {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0, 1, t / (duration / 2f));
-            target.transform.position = Vector3.Lerp(start, middle, progress);
-            yield return null;
-        }
+        Vector3 start = startPositions[target];
+        Vector3 mid = start - Vector3.right * distance;
+        Vector3 end = start - Vector3.right * distance * 2f;
+        float half = duration / 2f;
 
-        yield return new WaitForSeconds(1f); // cooldown di tengah
-
-        // Tengah → kiri (pilihan gaya easing)
-        t = 0f;
-        while (t < duration / 2f)
-        {
-            t += Time.deltaTime;
-
-            float progress;
-            if (easeOutExit)
-                progress = Mathf.SmoothStep(0, 1, t / (duration / 2f)); // cepat → lambat
-            else
-                progress = Mathf.Pow(t / (duration / 2f), 2f); // lambat → cepat (dramatis)
-
-            target.transform.position = Vector3.Lerp(middle, end, progress);
-            yield return null;
-        }
-
-        target.transform.position = end;
+        // Hentikan animasi sebelumnya DAN reset ke posisi awal
+        target.transform.DOKill();
         target.transform.position = start;
-        if(target.name == "WaveFailedFrame")
-        {
-            UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
-        }
-        onComplete?.Invoke();
-    }
 
+        // Buat sequence baru
+        Sequence seq = DOTween.Sequence();
 
-    private IEnumerator MoveObject(GameObject obj, Vector3 from, Vector3 to, float duration)
-    {
-        float t = 0f;
-        while (t < duration)
+        seq.Append(target.transform.DOMove(mid, half).SetEase(Ease.OutQuad));
+        seq.AppendInterval(1f);
+
+        if (easeOutExit)
+            seq.Append(target.transform.DOMove(end, half).SetEase(Ease.OutQuad));
+        else
+            seq.Append(target.transform.DOMove(end, half).SetEase(Ease.InQuad));
+
+        seq.AppendCallback(() =>
         {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0, 1, t / duration);
-            obj.transform.position = Vector3.Lerp(from, to, progress);
-            yield return null;
-        }
-        obj.transform.position = to;
+            target.transform.position = start; // reset final
+        });
+
+        seq.AppendCallback(() =>
+        {
+            if (target.name == "WaveFailedFrame")
+            {
+                UIManager.Instance.WaveStagePanel.GetComponent<SlideButton>().ActiveButton();
+            }
+        });
+
+        if (onComplete != null)
+            seq.OnComplete(() => onComplete.Invoke());
     }
 }

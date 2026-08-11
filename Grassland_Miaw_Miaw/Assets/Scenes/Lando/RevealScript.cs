@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using DG.Tweening;
 
 public class RevealScript : MonoBehaviour
 {
@@ -13,20 +14,29 @@ public class RevealScript : MonoBehaviour
     public float clickFadeDuration = 1f;
     public float shakeDuration = 0.5f;
     public float shakeAngle = 10f;
-    public float animationZOffset = -5f;
     public GameObject whiteLightPrefab;
+
+    [Header("Target World Position")]
+    public Transform unlockSummon;
 
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
     private Vector3 originalPos;
     private Vector3 originalScale;
     private GameObject target;
-    private bool clicked = false;
+
+    private Coroutine currentRoutine;
     private Action onCompleteCallback;
 
-    // ===================================================
-    // 🧩 Singleton Setup
-    // ===================================================
+    // ====================================================
+    // Cached components
+    // ====================================================
+    private CreatureAttack cachedAttack;
+    private DragScript cachedDrag;
+
+    // ====================================================
+    // Init
+    // ====================================================
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -34,10 +44,7 @@ public class RevealScript : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
-
-        Debug.Log($"✅ {name} diset untuk tetap hidup antar scene (tutorial sudah selesai).");
     }
 
     private void EnsureManager()
@@ -46,177 +53,267 @@ public class RevealScript : MonoBehaviour
             cam = Camera.main;
     }
 
-    // ===================================================
-    // 🎬 STATIC ENTRY POINTS
-    // ===================================================
+    // ====================================================
+    // Summon helper
+    // ====================================================
+    public GameObject SummonPrefab(GameObject prefab, Vector3 spawnPos)
+    {
+        GameObject icon = Instantiate(prefab, spawnPos, Quaternion.identity);
+
+        icon.transform.localScale = Vector3.one;
+        icon.transform.rotation = Quaternion.identity;
+        icon.transform.position = spawnPos;
+
+        return icon;
+    }
+
+    // ====================================================
+    // PUBLIC API
+    // ====================================================
     public void RevealPlay(GameObject targetObj, Action onComplete = null)
     {
         EnsureManager();
-        StartCoroutine(RevealSequence(targetObj, onComplete));
+
+        if (currentRoutine != null)
+        {
+            InputLockManager.Instance.UnlockInput();
+            StopCoroutine(currentRoutine);
+            ResetTargetState();
+        }
+
+        CacheAndDisableComponents(targetObj);
+        currentRoutine = StartCoroutine(RevealSequence(targetObj, onComplete));
     }
 
-    // ===================================================
-    // 🎥 REVEAL ANIMATION
-    // ===================================================
-    private IEnumerator RevealSequence(GameObject targetObj, Action onComplete)
+    public void RevealPlayInstantMove(GameObject targetObj, Action onComplete = null)
     {
+        EnsureManager();
+
+        if (currentRoutine != null)
+        {
+            InputLockManager.Instance.UnlockInput();
+            StopCoroutine(currentRoutine);
+            ResetTargetState();
+        }
+
+        CacheAndDisableComponents(targetObj);
+        currentRoutine = StartCoroutine(RevealSequenceInstantMove(targetObj, onComplete));
+    }
+
+    public void RevealPlayInstantMoveDied(GameObject targetObj, Action onComplete = null)
+    {
+        EnsureManager();
+
+        if (currentRoutine != null)
+        {
+            InputLockManager.Instance.UnlockInput();
+            StopCoroutine(currentRoutine);
+            ResetTargetState();
+        }
+
+        CacheAndDisableComponents(targetObj);
+        currentRoutine = StartCoroutine(RevealSequenceInstantMoveDied(targetObj, onComplete));
+    }
+
+    // ====================================================
+    // COMPONENT CACHE/RESTORE
+    // ====================================================
+    private void CacheAndDisableComponents(GameObject obj)
+    {
+        cachedAttack = obj.GetComponent<CreatureAttack>();
+        cachedDrag = obj.GetComponent<DragScript>();
+
+        if (cachedAttack != null)
+        {
+            cachedAttack.enabled = false;
+        }
+
+        if (cachedDrag != null)
+        {
+            cachedDrag.enabled = false;
+            cachedDrag.col.enabled = false;
+        }
+    }
+
+    private void RestoreComponents()
+    {
+        if (cachedAttack != null)
+            cachedAttack.enabled = true;
+
+        if (cachedDrag != null)
+        {
+            cachedDrag.enabled = true;
+            cachedDrag.col.enabled = true;
+        }
+    }
+
+    // ====================================================
+    // RESET
+    // ====================================================
+    private void ResetTargetState()
+    {
+        if (target == null) return;
+
+        target.transform.DOKill();
+        spriteRenderer?.DOKill();
+        whiteLightPrefab?.transform.DOKill();
+
+        target.transform.position = originalPos;
+        target.transform.localScale = originalScale;
+
+        if (spriteRenderer != null)
+            spriteRenderer.color = originalColor;
+
+        if (whiteLightPrefab != null)
+            whiteLightPrefab.SetActive(false);
+
+        // 🔥 restore komponen jika coroutine dihentikan
+        RestoreComponents();
+    }
+
+    // ====================================================
+    // INSTANT MOVE
+    // ====================================================
+    private IEnumerator RevealSequenceInstantMove(GameObject targetObj, Action onComplete)
+    {
+        InputLockManager.Instance.LockInput();
         target = targetObj;
         onCompleteCallback = onComplete;
 
         spriteRenderer = target.GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
-        {
-            Debug.LogError("AnimationScript: Target tidak memiliki SpriteRenderer!");
-            yield break;
-        }
-
         originalColor = spriteRenderer.color;
         originalPos = target.transform.position;
         originalScale = target.transform.localScale;
-        clicked = false;
 
         spriteRenderer.color = Color.black;
 
-        // Pindah ke tengah & membesar
-        Vector3 centerPos = cam.ScreenToWorldPoint(
-            new Vector3(Screen.width / 2, Screen.height / 2, -cam.transform.position.z)
-        );
-        centerPos.z = animationZOffset;
+        target.transform.position = unlockSummon.position;
 
-        float t = 0f;
-        Vector3 startPos = target.transform.position;
-        Vector3 startScale = target.transform.localScale;
-        Vector3 endScale = startScale * scaleMultiplier;
+        target.transform.DOScale(originalScale * scaleMultiplier, moveDuration)
+            .SetEase(Ease.OutBack);
 
-        while (t < moveDuration)
-        {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0, 1, t / moveDuration);
-            target.transform.position = Vector3.Lerp(startPos, centerPos, progress);
-            target.transform.localScale = Vector3.Lerp(startScale, endScale, progress);
-            yield return null;
-        }
+        yield return new WaitForSeconds(moveDuration);
 
-        // Tunggu klik
-        while (!clicked)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                Vector2 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
-                Collider2D hit = Physics2D.OverlapPoint(mousePos);
-
-                if (hit && hit.gameObject == target)
-                {
-                    clicked = true;
-                    break;
-                }
-            }
-            yield return null;
-        }
-
-        // Efek klik (reveal)
-        yield return StartCoroutine(OnClickReveal());
-
-        // Kembali ke posisi semula
+        yield return StartCoroutine(OnReveal());
         yield return StartCoroutine(ReturnToOriginal());
 
+        RestoreComponents(); // restore normal
         onCompleteCallback?.Invoke();
+        currentRoutine = null;
+        InputLockManager.Instance.UnlockInput();
+        CreatureButtonManager.Instance.GenerateButtons();
     }
 
-    private IEnumerator OnClickReveal()
+    private IEnumerator RevealSequenceInstantMoveDied(GameObject targetObj, Action onComplete)
+    {
+        InputLockManager.Instance.LockInput();
+        target = targetObj;
+        onCompleteCallback = onComplete;
+
+        spriteRenderer = target.GetComponent<SpriteRenderer>();
+        originalColor = spriteRenderer.color;
+        originalPos = target.transform.position;
+        originalScale = target.transform.localScale;
+
+        spriteRenderer.color = Color.black;
+
+        target.transform.position = unlockSummon.position;
+
+        target.transform.DOScale(originalScale * scaleMultiplier, moveDuration)
+            .SetEase(Ease.OutBack);
+
+        yield return new WaitForSeconds(moveDuration);
+
+        yield return StartCoroutine(OnReveal());
+
+        RestoreComponents(); // restore normal
+        onCompleteCallback?.Invoke();
+        currentRoutine = null;
+        InputLockManager.Instance.UnlockInput();
+        CreatureButtonManager.Instance.GenerateButtons();
+        Destroy(target);
+    }
+
+    // ====================================================
+    // MOVE + SCALE
+    // ====================================================
+    private IEnumerator RevealSequence(GameObject targetObj, Action onComplete)
+    {
+        InputLockManager.Instance.LockInput();
+        target = targetObj;
+        onCompleteCallback = onComplete;
+
+        spriteRenderer = target.GetComponent<SpriteRenderer>();
+        originalColor = spriteRenderer.color;
+        originalPos = target.transform.position;
+        originalScale = target.transform.localScale;
+
+        spriteRenderer.color = Color.black;
+
+        target.transform.DOMove(unlockSummon.position, moveDuration).SetEase(Ease.InOutSine);
+        target.transform.DOScale(originalScale * scaleMultiplier, moveDuration).SetEase(Ease.OutBack);
+
+        yield return new WaitForSeconds(moveDuration);
+
+        yield return StartCoroutine(OnReveal());
+        yield return StartCoroutine(ReturnToOriginal());
+
+        RestoreComponents();
+        onCompleteCallback?.Invoke();
+        currentRoutine = null;
+        InputLockManager.Instance.UnlockInput();
+        TutorialManager.Instance?.CompleteTutorial(15);
+    }
+
+    // ====================================================
+    // EFFECTS
+    // ====================================================
+    private IEnumerator OnReveal()
     {
         SpriteRenderer lightSprite = null;
+
         if (whiteLightPrefab != null)
         {
             whiteLightPrefab.SetActive(true);
             lightSprite = whiteLightPrefab.GetComponent<SpriteRenderer>();
         }
+
         AudioManager.Instance.PlayUnlockNewCreature();
 
         if (lightSprite != null)
         {
-            Color lightColor = lightSprite.color;
-            lightColor.a = 0f;
-            lightSprite.color = lightColor;
+            lightSprite.color = new Color(1, 1, 1, 0);
+            lightSprite.DOFade(1f, clickFadeDuration * 0.5f);
+            yield return new WaitForSeconds(clickFadeDuration * 0.5f);
 
-            float fadeInTime = 0f;
-            float fadeInDuration = clickFadeDuration * 0.5f;
-            while (fadeInTime < fadeInDuration)
-            {
-                fadeInTime += Time.deltaTime;
-                float alpha = Mathf.Lerp(0f, 1f, fadeInTime / fadeInDuration);
-                lightColor.a = alpha;
-                lightSprite.color = lightColor;
-                yield return null;
-            }
+            lightSprite.DOFade(0.5f, 0.25f).SetLoops(4, LoopType.Yoyo);
+            yield return new WaitForSeconds(1f);
 
-            float time = 0f;
-            while (time < clickFadeDuration)
-            {
-                time += Time.deltaTime;
-                float alpha = 1f - Mathf.PingPong(time * 2f, 0.5f);
-                lightColor.a = alpha;
-                lightSprite.color = lightColor;
-                yield return null;
-            }
-
-            float fadeOutTime = 0f;
-            while (fadeOutTime < fadeInDuration)
-            {
-                fadeOutTime += Time.deltaTime;
-                float alpha = Mathf.Lerp(1f, 0f, fadeOutTime / fadeInDuration);
-                lightColor.a = alpha;
-                lightSprite.color = lightColor;
-                yield return null;
-            }
+            lightSprite.DOFade(0f, clickFadeDuration * 0.5f);
+            yield return new WaitForSeconds(clickFadeDuration * 0.5f);
         }
 
-        float t = 0f;
-        while (t < clickFadeDuration)
-        {
-            t += Time.deltaTime;
-            spriteRenderer.color = Color.Lerp(Color.black, originalColor, t / clickFadeDuration);
-            yield return null;
-        }
-        spriteRenderer.color = originalColor;
+        spriteRenderer.DOColor(originalColor, clickFadeDuration);
+        yield return new WaitForSeconds(clickFadeDuration);
 
         yield return StartCoroutine(ShakeObject());
+
         whiteLightPrefab?.SetActive(false);
-        TutorialManager.Instance?.CompleteTutorial(15);
     }
 
     private IEnumerator ShakeObject()
     {
-        float t = 0f;
-        Quaternion originalRot = target.transform.rotation;
-
-        while (t < shakeDuration)
-        {
-            t += Time.deltaTime;
-            float angle = Mathf.Sin(t * Mathf.PI * 6f) * shakeAngle;
-            target.transform.rotation = originalRot * Quaternion.Euler(0, 0, angle);
-            yield return null;
-        }
-
-        target.transform.rotation = originalRot;
+        target.transform.DOShakeRotation(shakeDuration, new Vector3(0, 0, shakeAngle), 20, 90);
+        yield return new WaitForSeconds(shakeDuration);
     }
 
     private IEnumerator ReturnToOriginal()
     {
-        float t = 0f;
-        Vector3 startPos = target.transform.position;
-        Vector3 startScale = target.transform.localScale;
+        float returnDuration = moveDuration * 0.7f;
 
-        while (t < moveDuration * 0.7f)
-        {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0, 1, t / (moveDuration * 0.7f));
-            target.transform.position = Vector3.Lerp(startPos, originalPos, progress);
-            target.transform.localScale = Vector3.Lerp(startScale, originalScale, progress);
-            yield return null;
-        }
+        target.transform.DOMove(originalPos, returnDuration).SetEase(Ease.InOutSine);
+        target.transform.DOScale(originalScale, returnDuration).SetEase(Ease.InOutSine);
 
-        target.transform.position = originalPos;
-        target.transform.localScale = originalScale;
+        yield return new WaitForSeconds(returnDuration);
     }
 }

@@ -36,10 +36,12 @@ public class Creature : MonoBehaviour, IDamageable
 
         currentHP -= amount;
         Debug.Log($"{name} took {amount} damage. HP left: {currentHP}");
+        AudioManager.Instance.PlayAttackedCreature();
 
         if (currentHP <= 0)
         {
             Die();
+            AudioManager.Instance.PlayDeadCreature();
         }
     }
 

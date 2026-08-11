@@ -6,12 +6,12 @@ using System.Collections;
 public class Enemy : MonoBehaviour, IDamageable
 {
     [Header("Stats")]
-    public float maxHP = 50f;
-    public float atk = 10f;
-    public float moveSpeed = 1f;
+    private float maxHP = 50f;
+    private float atk = 10f;
+    private float moveSpeed = 1f;
     public int enemyIndex = 0;
-    public int baseCoin = 10;
-    public int pointProgression = 1;
+    private int baseCoin = 10;
+    private int pointProgression = 1;
 
     private float hp;
     private Rigidbody2D rb;
@@ -33,7 +33,9 @@ public class Enemy : MonoBehaviour, IDamageable
     // --- Slow Effect Variables ---
     private float originalMoveSpeed;
     private Coroutine slowCoroutine;
+    private Coroutine bleedCoroutine;
     private bool isSlowed = false;
+    private bool isBleeding = false;
 
     void Awake()
     {
@@ -67,10 +69,15 @@ public class Enemy : MonoBehaviour, IDamageable
     void MoveLeft()
     {
         var atkComp = GetComponent<EnemyAttack>();
+
         if (atkComp != null && atkComp.enemiesInRange.Count > 0)
         {
             rb.linearVelocity = Vector2.zero;
             return;
+        }
+        if(rb == null)
+        {
+            Debug.LogError("tak bisa gerak");
         }
 
         rb.linearVelocity = new Vector2(-moveSpeed, rb.linearVelocity.y);
@@ -97,6 +104,11 @@ public class Enemy : MonoBehaviour, IDamageable
             ApplySlowEffect(3f, 0.3f); // 5 detik, 30% slow
         }
 
+        if (status == Effect.Bleed)
+        {
+            ApplyBleedEffect(3, amount/20); // 5 tick, 2 damage per tick
+        }
+
         if (hp <= 0 && !once)
         {
             once = true;
@@ -107,7 +119,7 @@ public class Enemy : MonoBehaviour, IDamageable
                     GameManager.Instance.AddStageProgress(pointProgression);
                     StageManager.Instance.UpdateTargetAchieved();
                 }
-                ObjectManager.Instance.SummonCoin(gameObject, Random.Range(baseCoin, Mathf.RoundToInt(baseCoin * 1.3f)));
+                ObjectManager.Instance.SummonCoinWithRandomOffset(gameObject, Random.Range(baseCoin, Mathf.RoundToInt(baseCoin * 1.3f)));
             }
             GetComponent<Animator>()?.SetTrigger("isDead");
             AudioManager.Instance.PlayEnemyDead(gameObject.GetComponent<AudioSource>());
@@ -137,11 +149,50 @@ public class Enemy : MonoBehaviour, IDamageable
         slowCoroutine = StartCoroutine(SlowRoutine(duration, slowPercentage));
     }
 
+    public void ApplyBleedEffect(int ticks, float damagePerTick)
+    {
+        if (isBleeding)
+        {
+            Debug.Log($"[Bleed] Enemy already bleeding, ignoring new bleed effect");
+            return;
+        }
+
+        if (bleedCoroutine != null)
+            StopCoroutine(bleedCoroutine);
+
+        bleedCoroutine = StartCoroutine(BleedRoutine(ticks, damagePerTick));
+    }
+
+    private IEnumerator BleedRoutine(int ticks, float damagePerTick)
+    {
+        isBleeding = true;
+        SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
+        sr.color = new Color(1f, 0.8f, 0.8f);
+        ParticleManager.Instance.SummonParticleBleed(gameObject, ticks);
+
+        for (int i = 0; i < ticks; i++)
+        {
+            if (IsDead) break;
+
+            TakeDamage(damagePerTick, Effect.None);
+            Debug.Log($"[Bleed] Tick {i + 1}/{ticks}: Dealt {damagePerTick} bleed damage.");
+
+            yield return new WaitForSeconds(1f); // tunggu 1 detik antara tick
+        }
+
+        isBleeding = false;
+        bleedCoroutine = null;
+        sr.color = Color.white;
+
+        Debug.Log($"[Bleed] Bleed effect ended.");
+    }
+
     private IEnumerator SlowRoutine(float duration, float slowPercentage)
     {
         isSlowed = true;
         SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
         sr.color = new Color(0.9f, 0.9f, 1f);
+        ParticleManager.Instance.SummonParticleSlow(gameObject, duration);
         
         // Apply slow
         float slowMultiplier = 1f - slowPercentage;

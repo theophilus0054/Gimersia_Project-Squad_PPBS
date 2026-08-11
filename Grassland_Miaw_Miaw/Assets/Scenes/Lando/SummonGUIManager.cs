@@ -27,9 +27,6 @@ public class SummonGUIManager : MonoBehaviour
     private CreatureData currentCreature;
     private GameObject currentPreviewInstance;
 
-    // 🔹 Tambahan: catat jumlah pembelian tiap creature
-    private Dictionary<int, int> creaturePurchaseCount = new Dictionary<int, int>();
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -64,6 +61,18 @@ public class SummonGUIManager : MonoBehaviour
             Destroy(currentPreviewInstance);
     }
 
+    public static string ScaleNumber(long value)
+    {
+        if (value >= 1_000_000_000)
+            return (value / 1_000_000_000f).ToString("0.#") + "B";
+        if (value >= 1_000_000)
+            return (value / 1_000_000f).ToString("0.#") + "M";
+        if (value >= 1_000)
+            return (value / 1_000f).ToString("0.#") + "K";
+
+        return value.ToString();
+    }
+
     public void ShowCreatureByIndex(int index)
     {
         CreatureData creature = null;
@@ -92,10 +101,10 @@ public class SummonGUIManager : MonoBehaviour
         if (descText) descText.text = creature.description;
 
         // 🔹 Tampilkan harga yang dinamis
-        if (costText) costText.text = $"Cost: {GetCurrentCost(creature)}";
+        if (costText) costText.text = $"Cost: {ScaleNumber(GetCurrentCost(creature))}";
 
         if (currentText)
-            currentText.text = creature.type == CreatureType.Unagi ? $"T{creature.index + 1}" : "";
+            currentText.text = $"T{creature.tier}";
 
         if (prefabCreatureDisplay && creature.displayPrefab)
         {
@@ -104,10 +113,9 @@ public class SummonGUIManager : MonoBehaviour
 
             currentPreviewInstance = Instantiate(
                 creature.displayPrefab,
-                prefabCreatureDisplay.position,
-                Quaternion.identity
+                prefabCreatureDisplay,
+                false
             );
-            currentPreviewInstance.transform.SetParent(prefabCreatureDisplay);
         }
 
         CheckCost();
@@ -119,6 +127,7 @@ public class SummonGUIManager : MonoBehaviour
         if (currentCreature == null) return false;
 
         int currentCost = GetCurrentCost(currentCreature);
+        if (costText) costText.text = $"Cost: {ScaleNumber(GetCurrentCost(currentCreature))}";
         bool cukup = GameManager.Instance.totalCoins >= currentCost;
 
         summonButton.color = cukup
@@ -167,16 +176,13 @@ public class SummonGUIManager : MonoBehaviour
 
 
     // 🔹 Rumus harga dinamis (tidak eksponensial)
-    private int GetCurrentCost(CreatureData creature)
+    public int GetCurrentCost(CreatureData creature)
     {
         int baseCost = creature.cost;
-        int timesBought = creaturePurchaseCount.ContainsKey(creature.index) ? creaturePurchaseCount[creature.index] : 0;
 
-        float growthRate = 1.5f + (creature.index * 0.15f);
-        growthRate = Mathf.Min(growthRate, 3.0f); // biar gak gila di level tinggi
+        int timesBought = GameManager.Instance.creaturePurchaseCount.ContainsKey(creature.index) ? GameManager.Instance.creaturePurchaseCount[creature.index] : 0;
 
-        // 🔹 Harga = baseCost * (growthRate ^ jumlah beli)
-        float scaled = baseCost * Mathf.Pow(growthRate, timesBought);
+        float scaled = baseCost * (1 + 0.5f * timesBought + 0.1f * timesBought * timesBought);
 
         return Mathf.RoundToInt(scaled);
     }
@@ -185,10 +191,9 @@ public class SummonGUIManager : MonoBehaviour
 
     public void ShowNextCreature()
     {
-        if (allCreatures.Length == 0) return;
+        if (allCreatures.Length == 0 || currentCreature == null) return;
 
         int startIndex = currentIndex;
-        
         bool found = false;
 
         do
@@ -197,7 +202,10 @@ public class SummonGUIManager : MonoBehaviour
             if (currentIndex >= allCreatures.Length)
                 currentIndex = 0;
 
-            if (GameManager.Instance.unlockedIndex != null && currentIndex < GameManager.Instance.unlockedIndex.Length && GameManager.Instance.unlockedIndex[currentIndex])
+            if (GameManager.Instance.unlockedIndex != null &&
+                currentIndex < GameManager.Instance.unlockedIndex.Length &&
+                GameManager.Instance.unlockedIndex[currentIndex] &&
+                allCreatures[currentIndex].type == currentCreature.type) // ⬅️ FILTER TYPE
             {
                 found = true;
                 break;
@@ -205,19 +213,12 @@ public class SummonGUIManager : MonoBehaviour
 
         } while (currentIndex != startIndex);
 
-        // kalau tidak ditemukan unlocked creature, balik ke 0
-        if (!found)
-        {
-            currentIndex = 0;
-            if (GameManager.Instance.unlockedIndex != null && GameManager.Instance.unlockedIndex.Length > 0 && GameManager.Instance.unlockedIndex[0])
-                found = true;
-        }
-
         if (found)
             ShowCreatureByIndex(allCreatures[currentIndex].index);
         else
-            Debug.Log("No unlocked creatures available!");
+            Debug.Log("No valid NEXT creature with same type!");
     }
+
 
     public void ShowPreviousCreature()
     {
@@ -234,7 +235,8 @@ public class SummonGUIManager : MonoBehaviour
 
             if (GameManager.Instance.unlockedIndex != null &&
                 currentIndex < GameManager.Instance.unlockedIndex.Length &&
-                GameManager.Instance.unlockedIndex[currentIndex])
+                GameManager.Instance.unlockedIndex[currentIndex] &&
+                allCreatures[currentIndex].type == currentCreature.type) // ⬅️ FILTER TYPE
             {
                 found = true;
                 break;

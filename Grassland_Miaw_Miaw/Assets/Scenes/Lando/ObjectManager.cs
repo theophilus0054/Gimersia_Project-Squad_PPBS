@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using DG.Tweening;   // << DOTWEEN
 
 public class ObjectManager : MonoBehaviour
 {
@@ -12,6 +13,12 @@ public class ObjectManager : MonoBehaviour
     public GameObject coinObject;
     public Transform coinLocation;
 
+    [Header("Coin Movement Settings")]
+    public float offsetRange = 0.6f;       // radius random coin spawn offset
+    public float bounceHeight = 0.35f;     // tinggi bounce
+    public float bounceDuration = 0.28f;
+    public float moveDuration = 0.8f;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -20,35 +27,72 @@ public class ObjectManager : MonoBehaviour
             return;
         }
         Instance = this;
-        // Optional: DontDestroyOnLoad(gameObject);
     }
 
-    public void SummonCoin(GameObject obj, int coinCount)
+    // =========================================================================
+    // DIPANGGIL DARI RewardManager
+    // =========================================================================
+    public void SummonCoinWithRandomOffset(GameObject source, int coinValue)
     {
-        GameObject coin = Instantiate(coinObject, obj.transform.position, Quaternion.identity);
-        StartCoroutine(MoveCoinToTarget(coin, coinLocation.position, 1f, coinCount));
+        // Random offset XY
+        Vector3 offset = new Vector3(
+            Random.Range(-offsetRange, offsetRange),
+            Random.Range(-offsetRange, offsetRange),
+            0
+        );
+
+        Vector3 spawnPos = source.transform.position + offset;
+
+        GameObject coin = Instantiate(coinObject, spawnPos, Quaternion.identity);
+
+        PlayCoinSequenceDOTween(coin, coinLocation.position, coinValue);
     }
 
-    private IEnumerator MoveCoinToTarget(GameObject coin, Vector3 target, float duration, int coins)
+    // =========================================================================
+    // DOTWEEN COIN ANIMATION
+    // =========================================================================
+    void PlayCoinSequenceDOTween(GameObject coin, Vector3 targetPos, int coinValue)
     {
         Vector3 startPos = coin.transform.position;
-        float time = 0f;
-        yield return new WaitForSeconds(1f);
 
-        while (time < duration)
+        Sequence seq = DOTween.Sequence();
+
+        // -----------------------------
+        // BOUNCE UP
+        // -----------------------------
+        seq.Append(
+            coin.transform.DOMoveY(startPos.y + bounceHeight, bounceDuration * 0.5f)
+                .SetEase(Ease.OutQuad)
+        );
+
+        // -----------------------------
+        // BOUNCE DOWN
+        // -----------------------------
+        seq.Append(
+            coin.transform.DOMoveY(startPos.y, bounceDuration * 0.5f)
+                .SetEase(Ease.InQuad)
+        );
+
+        // -----------------------------
+        // FLY TO TARGET
+        // -----------------------------
+        seq.Append(
+            coin.transform.DOMove(targetPos, moveDuration)
+                .SetEase(Ease.InOutSine)
+        );
+
+        // -----------------------------
+        // ON COMPLETE → ADD COIN + DESTROY
+        // -----------------------------
+        seq.OnComplete(() =>
         {
-            time += Time.deltaTime;
-            float t = time / duration;
-            // Optional: tambahkan efek lerp curve
-            coin.transform.position = Vector3.Lerp(startPos, target, Mathf.SmoothStep(0, 1, t));
-            yield return null;
-        }
+            GameManager.Instance.AddCoins(coinValue);
 
-        // Pastikan posisi akhir di target
-        coin.transform.position = target;
-
-        // Bisa tambah efek ketika coin sampai (misal: tambah skor, animasi pop, destroy)
-        Destroy(coin, 0.2f);
-        GameManager.Instance.AddCoins(coins);
+            // efek kecil: scale pop
+            coin.transform.DOScale(1.2f, 0.08f).SetEase(Ease.OutBack).OnComplete(() =>
+            {
+                Destroy(coin);
+            });
+        });
     }
 }

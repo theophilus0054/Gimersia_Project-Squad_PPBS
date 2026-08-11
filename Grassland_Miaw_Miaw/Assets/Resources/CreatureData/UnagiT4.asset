@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35e12fa270de9f14f8f8c51ef2b9e77d, type: 3}
+  m_Name: UnagiT4
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  index: 3
+  creatureName: Jet Unagi
+  type: 0
+  range: High
+  damage: Medium
+  description: A tiny unagi has discovered the art of momentum! It spins and twirls
+    like a spring-loaded noodle, ready to launch a shocking surprise at its enemies.
+  cost: 1600
+  hp: 200
+  atk: 150
+  atkSpeed: 4
+  projectileSpeed: 12
+  tileRange: 6
+  possibleEvolutions:
+  - {fileID: 11400000, guid: 607ee5a45b06de44ca026e156d8721df, type: 2}
+  tier: 4
+  effectsArray: []
+  summonPrefab: {fileID: 5847998885843973870, guid: 3e79b1bdc93ff7946bb953f9b895cbfa, type: 3}
+  displayPrefab: {fileID: 5847998885843973870, guid: 00269eb73f9715841a943e8611672777, type: 3}

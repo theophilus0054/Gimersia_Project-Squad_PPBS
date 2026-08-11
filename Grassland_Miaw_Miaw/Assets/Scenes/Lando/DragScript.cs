@@ -1,21 +1,26 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class DragScript : MonoBehaviour
 {
-    private Collider2D col;
+    public Collider2D col;
     private Vector3 startDragPosition;
     public int posX = 1;
     public int posY = 1;
-    private bool isDragging = false;
+    public bool isDragging = false;
 
     public int evolutionIndex = 0;
     
     private Camera mainCam;
 
-    void Start()
+    void Awake()
     {
         col = GetComponent<Collider2D>();
+    }
+
+    void Start()
+    {
         mainCam = Camera.main;
         
         if(col == null)
@@ -48,39 +53,44 @@ public class DragScript : MonoBehaviour
     private void TryStartDrag()
     {
         Vector2 mousePos = GetMousePosition();
-        
-        // Cek SEMUA collider di posisi mouse (bisa ada DropArea + DragScript overlap)
         Collider2D[] allHits = Physics2D.OverlapPointAll(mousePos);
-        
-        Debug.Log($"🖱️ Mouse at {mousePos}, found {allHits.Length} colliders");
-        
-        // Cari apakah ada DragScript di posisi mouse
-        // Prioritaskan DragScript daripada DropArea
+        if(InputLockManager.Instance.IsLocked) return;
+
         foreach (var hit in allHits)
         {
-            Debug.Log($"  - Hit: {hit.name} (tag: {hit.tag})");
-            
-            // Kalau ketemu collider ini, mulai drag
             if (hit == col)
             {
                 AudioManager.Instance.PlayPickupCreature();
                 startDragPosition = transform.position;
                 isDragging = true;
-                Debug.Log($"✅ Started dragging {name}");
+
+                // ⚡ Disable collider supaya tidak diserang
+                col.enabled = false;
+
+                // Opsional: disable script attack juga
+                var attack = GetComponent<CreatureAttack>();
+                if (attack != null)
+                    attack.enabled = false;
+
+                TrashManager.Instance.trashDropArea.SetActive(true);
+
                 return;
             }
         }
-        
-        Debug.Log($"❌ This object not found at mouse position");
     }
+
 
     private void EndDrag()
     {
         isDragging = false;
-        Debug.Log($"🛑 Stopped dragging {name}");
-        
-        // ✅ Dapatkan SEMUA collider di posisi drop
-        col.enabled = false; // Disable dulu biar ga detect diri sendiri
+
+        // Re-enable collider
+        col.enabled = true;
+
+        // Re-enable attack script
+        var attack = GetComponent<CreatureAttack>();
+        if (attack != null)
+            attack.enabled = true;
         Collider2D[] allHits = Physics2D.OverlapPointAll(transform.position);
         col.enabled = true;
 
@@ -117,6 +127,7 @@ public class DragScript : MonoBehaviour
             Debug.LogWarning("No DropArea detected at drop position");
             transform.position = startDragPosition;
         }
+        TrashManager.Instance.trashDropArea.SetActive(false);
     }
 
     private void HandleNormalDrop(IDragDrop dropArea)
@@ -171,30 +182,41 @@ public class DragScript : MonoBehaviour
             Debug.Log($"Hit collider: {col2.name}, tag: {col2.tag}");
             if (col2.TryGetComponent(out DragScript other) && other != this)
             {
-                if (other.evolutionIndex == this.evolutionIndex &&
-                    EvolutionManager.Instance.CanEvolveTo(evolutionIndex, evolutionIndex + 1))
+                if (other.evolutionIndex == this.evolutionIndex)
                 {
-                    Debug.Log($"🧬 Merge detected at ({dropArea.GetX()}, {dropArea.GetY()})!");
+                    if(EvolutionManager.Instance.CanEvolveTo(evolutionIndex, evolutionIndex + 1)){
+                        Debug.Log($"🧬 Merge detected at ({dropArea.GetX()}, {dropArea.GetY()})!");
 
-                    int nextEvolution = this.evolutionIndex + 1;
+                        int nextEvolution = this.evolutionIndex + 1;
 
-                    // kosongkan DropArea lama
-                    foreach (var col in oldColliders)
-                    {
-                        if (col.CompareTag("DropArea") && col.TryGetComponent(out IDragDrop leaveArea))
+                        // kosongkan DropArea lama
+                        foreach (var col in oldColliders)
                         {
-                            leaveArea.OnItemLeave(this);
-                            break;
+                            if (col.CompareTag("DropArea") && col.TryGetComponent(out IDragDrop leaveArea))
+                            {
+                                leaveArea.OnItemLeave(this);
+                                break;
+                            }
                         }
+
+                        Destroy(other.gameObject);
+                        Destroy(this.gameObject);
+
+                        AudioManager.Instance.PlayMergeCreature();
+                        SummonManager.SummonEvolution(nextEvolution, (DropArea)dropArea);
+                        merged = true;
+                        break;
                     }
-
-                    Destroy(other.gameObject);
-                    Destroy(this.gameObject);
-
-                    AudioManager.Instance.PlayMergeCreature();
-                    SummonManager.SummonEvolution(nextEvolution, (DropArea)dropArea);
-                    merged = true;
-                    break;
+                    else
+                    {
+                        GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
+                        obj.GetComponentInChildren<TextMeshProUGUI>().text = "Max Evolution!";
+                    }
+                } 
+                else
+                {
+                    GameObject obj = Instantiate(UIManager.Instance.popupWarningPrefab, UIManager.Instance.popupWarningSlot.transform);
+                    obj.GetComponentInChildren<TextMeshProUGUI>().text = "Wrong evolution!";
                 }
             }
         }

@@ -28,6 +28,7 @@ public class EvolutionManager : MonoBehaviour
             Debug.LogWarning($"Index {index} out of range for evolutions list!");
             return null;
         }
+
         return evolutions[index];
     }
 

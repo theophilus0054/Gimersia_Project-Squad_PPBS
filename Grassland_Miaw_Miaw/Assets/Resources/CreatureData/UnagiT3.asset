@@ -25,7 +25,8 @@ MonoBehaviour:
   atkSpeed: 2
   projectileSpeed: 6
   tileRange: 6
-  possibleEvolutions: []
+  possibleEvolutions:
+  - {fileID: 11400000, guid: 28dc2b81ed9312547bea7b26c58b16ab, type: 2}
   tier: 3
   effectsArray: []
   summonPrefab: {fileID: 5847998885843973870, guid: 1d8b79327181c03449a73f82dcb1cfba, type: 3}

@@ -2,30 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class WaveEnemy
-{
-    public int enemyIndex;      // index di EnemyManager
-    public int count;           // jumlah musuh yang muncul
-}
-
-[System.Serializable]
-public class Wave
-{
-    public string waveName;
-    public List<WaveEnemy> enemies = new List<WaveEnemy>();
-    [Tooltip("Delay antar spawn untuk seluruh wave")]
-    public float delayBetweenSpawns = 1f;
-    [Tooltip("Delay sebelum wave berikutnya")]
-    public float delayBeforeNextWave = 3f;
-}
-
 public class WaveManager : MonoBehaviour
 {
     public static WaveManager Instance { get; private set; }
 
-    [Header("Wave Settings")]
-    public List<Wave> waves = new List<Wave>();
+    [Header("Wave Data")]
+    public WaveSet waveSet;   // <-- Drag ScriptableObject WaveSet di sini
 
     [Header("Runtime Info")]
     private int currentWaveIndex = 0;
@@ -40,55 +22,60 @@ public class WaveManager : MonoBehaviour
         Instance = this;
     }
 
-    void Start()
-    {
-        
-    }
-
     public IEnumerator StartWaves()
     {
+        if (waveSet == null || waveSet.waves.Count == 0)
+        {
+            Debug.LogError("❌ WaveSet belum di-assign!");
+            yield break;
+        }
+
+        BGMManager.Instance.ToggleBGM();
         Debug.Log("🚀 Starting Waves...");
-        for (int i = 0; i < waves.Count; i++)
+
+        for (int i = 0; i < waveSet.waves.Count; i++)
         {
             currentWaveIndex = i;
-            yield return StartCoroutine(SpawnWave(waves[i]));
-            yield return new WaitForSeconds(waves[i].delayBeforeNextWave);
+            WaveData wave = waveSet.waves[i];
+
+            RippleManager.Instance.callShockwave();
+
+            yield return StartCoroutine(SpawnWave(wave));
+            yield return new WaitForSeconds(wave.delayBeforeNextWave);
         }
+
         Debug.Log("🎉 All waves completed!");
     }
 
-    public IEnumerator SpawnWave(Wave wave)
+    public IEnumerator SpawnWave(WaveData wave)
     {
         Debug.Log($"🌊 Starting Wave: {wave.waveName}");
 
-        // Salin list supaya original tidak terganggu
+        // Copy list agar original tidak berubah
         List<WaveEnemy> enemiesLeft = new List<WaveEnemy>();
         foreach (var we in wave.enemies)
+        {
             enemiesLeft.Add(new WaveEnemy { enemyIndex = we.enemyIndex, count = we.count });
+        }
 
-        // Parent tempat semua musuh
         Transform parent = ObjectManager.Instance.enemySpawn.transform;
 
         while (enemiesLeft.Count > 0)
         {
-            // Pilih WaveEnemy secara random
             int randomIndex = Random.Range(0, enemiesLeft.Count);
             WaveEnemy selected = enemiesLeft[randomIndex];
 
-            // Spawn 1 musuh sebagai child parent
-            int row = Random.Range(1, 6); // misal 5 row (1-4)
+            int row = Random.Range(1, 6);
             EnemyManager.Instance.SpawnEnemy(selected.enemyIndex, row);
 
-            // Kurangi count
             selected.count--;
             if (selected.count <= 0)
                 enemiesLeft.RemoveAt(randomIndex);
 
-            // Delay antar spawn (sama untuk semua musuh di wave)
             yield return new WaitForSeconds(wave.delayBetweenSpawns);
         }
 
-        // Tunggu sampai semua musuh di parent mati
+        // Tunggu musuh habis
         while (parent.childCount > 0)
         {
             yield return null;
@@ -97,7 +84,6 @@ public class WaveManager : MonoBehaviour
         Debug.Log($"✅ Wave {wave.waveName} completed!");
     }
 
-
     public void RestartWaves()
     {
         StopAllCoroutines();
@@ -105,5 +91,5 @@ public class WaveManager : MonoBehaviour
         StartCoroutine(StartWaves());
     }
 
-    public bool IsLastWave => currentWaveIndex >= waves.Count - 1;
+    public bool IsLastWave => currentWaveIndex >= waveSet.waves.Count - 1;
 }

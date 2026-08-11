@@ -23,6 +23,13 @@ public class UpgradeGUIManager : MonoBehaviour
     public int currentIndex = 0;
     private UpgradeData currentUpgrade;
 
+    [Header("Land Expansion")]
+    public int landExpansionLevel = 0;
+    public GameObject[] landExpansion1Prefab;
+    public GameObject[] landExpansion2Prefab;
+    public GameObject[] landExpansion3Prefab;
+    public GameObject[] landExpansion4Prefab;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -42,13 +49,14 @@ public class UpgradeGUIManager : MonoBehaviour
             currentUpgrade.isPurchased = true;
             CheckCost();
             UpdateUpgrades();
+            GameManager.Instance.SaveData();
         }
     }
 
     void Start()
     {
         ClearAllText();
-        UpdateUpgrades();
+        GameManager.Instance.LoadData();
         // bisa aktifin kalau mau langsung tampil:
         // ShowUpgradeByIndex(currentIndex);
     }
@@ -93,7 +101,7 @@ public class UpgradeGUIManager : MonoBehaviour
         descriptionPanel.SetActive(true);
         if (nameText) nameText.text = upgrade.upgradeName;
         if (descText) descText.text = upgrade.description;
-        if (costText) costText.text = $"{upgrade.cost}";
+        if (costText) costText.text = $"{ScaleNumber(upgrade.cost)}";
 
         CheckCost();
     }
@@ -123,6 +131,7 @@ public class UpgradeGUIManager : MonoBehaviour
 
     public void UpdateUpgrades()
     {
+        landExpansionLevel = 0;
         for (int i = 0; i < allUpgrades.Length; i++)
         {
             if (allUpgrades[i].isPurchased)
@@ -150,8 +159,74 @@ public class UpgradeGUIManager : MonoBehaviour
                     }
                 }
                 break;
+            case 1:
+                for (int i = 0; i < SummonGUIManager.Instance.allCreatures.Length; i++)
+                {
+                    CreatureData creature = SummonGUIManager.Instance.allCreatures[i];
+                    if (creature.type == CreatureType.Crab)
+                    {
+                        // Tambahkan efek Slow menggunakan AddEffect
+                        creature.AddEffect(new EffectData { effectType = Effect.Bleed, chanceToApply = 20f });
+                        
+                        // Sinkronkan ke array untuk Inspector (opsional, tergantung kebutuhan)
+                        creature.SyncEffectsToArray();
+                    }
+                }
+                break;
+            case 2:
+                for (int i = 0; i < SummonGUIManager.Instance.allCreatures.Length; i++)
+                {
+                    CreatureData creature = SummonGUIManager.Instance.allCreatures[i];
+                    if (creature.type == CreatureType.Puffer)
+                    {
+                        // Tambahkan efek Slow menggunakan AddEffect
+                        creature.AddEffect(new EffectData { effectType = Effect.PufferAtk, chanceToApply = 100f });
+                        
+                        // Sinkronkan ke array untuk Inspector (opsional, tergantung kebutuhan)
+                        creature.SyncEffectsToArray();
+                    }
+                }
+                break;
+            case 3: case 4: case 5: case 6:
+                switch(landExpansionLevel)
+                {
+                    case 0:
+                        landExpansionUpgrade(landExpansion1Prefab);
+                        break;
+                    case 1:
+                        landExpansionUpgrade(landExpansion2Prefab);
+                        break;
+                    case 2:
+                        landExpansionUpgrade(landExpansion3Prefab);
+                        break;
+                    case 3:
+                        landExpansionUpgrade(landExpansion4Prefab);
+                        break;
+                }
+                landExpansionLevel++;
+                break;
         }
 
         Debug.Log($"{upgrade.name} applied!");
+    }
+
+    public static string ScaleNumber(long value)
+    {
+        if (value >= 1_000_000_000)
+            return (value / 1_000_000_000f).ToString("0.#") + "B";
+        if (value >= 1_000_000)
+            return (value / 1_000_000f).ToString("0.#") + "M";
+        if (value >= 1_000)
+            return (value / 1_000f).ToString("0.#") + "K";
+
+        return value.ToString();
+    }
+
+    public void landExpansionUpgrade(GameObject[] objects)
+    {
+        foreach (GameObject obj in objects)
+        {
+            obj.SetActive(true);
+        }
     }
 }

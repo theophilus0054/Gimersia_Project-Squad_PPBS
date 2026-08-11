@@ -54,32 +54,35 @@
 
     void Update()
     {
-        Transform target = GetNearestEnemy();
+        // Cek dulu apakah sedang di-drag
+        var drag = GetComponent<DragScript>();
+        if (drag != null && drag.isDragging)
+            return; // skip attack saat drag
 
+        Transform target = GetNearestEnemy();
         if (target != null)
         {
-            // Jika target baru terdeteksi, beri delay sebelum menyerang
             if (!targetDetected)
             {
                 targetDetected = true;
-                fireCooldown = fireDelay; // delay pertama sebelum menyerang
+                fireCooldown = fireDelay;
             }
 
             fireCooldown -= Time.deltaTime;
 
             if (fireCooldown <= 0f)
             {
-                Debug.Log($"{name}: Anjay nembak {target.name}");
                 FireAt(target);
-                fireCooldown = fireDelay; // reset cooldown setelah menyerang
+                fireCooldown = fireDelay;
             }
         }
         else
         {
-            targetDetected = false; // reset flag jika tidak ada target
-            fireCooldown = 0f;      // optional reset cooldown
+            targetDetected = false;
+            fireCooldown = 0f;
         }
     }
+
         
 
     Transform GetNearestEnemy()
@@ -134,15 +137,34 @@
         }
 
         var projObj = Instantiate(projectilePrefab, fireOrigin.position, Quaternion.identity);
-        AudioManager.Instance.PlayUnagiBubble(gameObject.GetComponent<AudioSource>());
         Projectile p = projObj.GetComponent<Projectile>();
         if (p != null)
         {
             int evoIndex = GetComponent<DragScript>().evolutionIndex;
+            if(SummonGUIManager.Instance.allCreatures[evoIndex].type == CreatureType.Unagi)
+            {
+                AudioManager.Instance.PlayUnagiBubble(gameObject.GetComponent<AudioSource>());
+            } else if (SummonGUIManager.Instance.allCreatures[evoIndex].type == CreatureType.Crab)
+            {
+                AudioManager.Instance.PlayCrabPinch(gameObject.GetComponent<AudioSource>());
+            } else if (SummonGUIManager.Instance.allCreatures[evoIndex].type == CreatureType.Puffer)
+            {
+                AudioManager.Instance.PlayPuffBloat(gameObject.GetComponent<AudioSource>());
+            }
+            
             if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.Slow)
             {
                 p.Init(target, evoIndex, Effect.Slow);
-            } else
+            } 
+            else if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.Bleed)
+            {
+                p.Init(target, evoIndex, Effect.Bleed);
+            } 
+            else if (RollEffect(SummonGUIManager.Instance.allCreatures[evoIndex].effectsArray) == Effect.PufferAtk)
+            {
+                p.Init(target, evoIndex, Effect.PufferAtk);
+            }
+            else
             {
                 p.Init(target, evoIndex, Effect.None);
             }

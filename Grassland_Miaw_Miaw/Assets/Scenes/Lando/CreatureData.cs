@@ -26,14 +26,15 @@ public enum Effect
 {
     None,
     Slow,
-    Bleed
+    Bleed,
+    PufferAtk
 }
 
 public enum CreatureType
 {
     Unagi,
     Crab,
-    Jelly,
+    Puffer,
     Turtle
 }
 

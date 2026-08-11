@@ -19,7 +19,7 @@ public class SlideButton : MonoBehaviour
             return;
         }
         
-        if (StageManager.Instance.currentStage >= StageManager.Instance.stageSummons.Length)
+        if (StageManager.Instance.currentStage >= StageManager.Instance.stageDatabase.stages.Count())
         {
             UIManager.Instance.WaveEndlessPanel.GetComponent<EndlessScript>().ActiveButton();
             return;

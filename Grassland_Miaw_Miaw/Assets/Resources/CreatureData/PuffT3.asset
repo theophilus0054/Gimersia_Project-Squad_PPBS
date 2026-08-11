@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35e12fa270de9f14f8f8c51ef2b9e77d, type: 3}
+  m_Name: PuffT3
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  index: 32
+  creatureName: Tetra Puffer
+  type: 2
+  range: Low
+  damage: High
+  description: "A tiny square puffer with bright warning colors and natural toxins.
+    Cute to look at\u2014dangerous to touch."
+  cost: 12000
+  hp: 600
+  atk: 10
+  atkSpeed: 0.5
+  projectileSpeed: 6
+  tileRange: 1
+  possibleEvolutions: []
+  tier: 3
+  effectsArray: []
+  summonPrefab: {fileID: 5847998885843973870, guid: 9da418a67e5387c48b8c114fc60323df, type: 3}
+  displayPrefab: {fileID: 5847998885843973870, guid: ae772ef139756724397296c37ae0c161, type: 3}

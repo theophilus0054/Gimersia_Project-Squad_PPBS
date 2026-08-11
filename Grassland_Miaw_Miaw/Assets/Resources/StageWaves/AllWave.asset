@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a172f71ae2ee6a44594da547dcb7e593, type: 3}
+  m_Name: AllWave
+  m_EditorClassIdentifier: Assembly-CSharp::WaveSet
+  waves:
+  - {fileID: 11400000, guid: 401b69c1295918947a14c27d400af236, type: 2}
+  - {fileID: 11400000, guid: c6ec900520d792f478a04e5a1fd60fb7, type: 2}
+  - {fileID: 11400000, guid: eb396cc4896798845b5b06187c5536fe, type: 2}
+  - {fileID: 11400000, guid: 93ff20ddd92ac534189203a554d046e2, type: 2}
+  - {fileID: 11400000, guid: 6079d3a7f520c8d4aa2de4fca38d1da9, type: 2}
+  - {fileID: 11400000, guid: 2093c9c5446d4b145ba0578fde3a0070, type: 2}
+  - {fileID: 11400000, guid: c8291ab4c34f7da48a7c8b25eb3f1807, type: 2}
+  - {fileID: 11400000, guid: b80e50f3bdc33cd4fab7d4c784dba2da, type: 2}
+  - {fileID: 11400000, guid: bbacf70d99729ea43b830bbf1a3660b6, type: 2}

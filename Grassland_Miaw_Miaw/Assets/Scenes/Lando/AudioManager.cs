@@ -8,15 +8,23 @@ public class AudioManager : MonoBehaviour
     [Header("Clips")]
     public AudioClip bubblePop;
     public AudioClip unagiBubble;
+    public AudioClip crabPinch;
+    public AudioClip puffBloat;
     public AudioClip enemyDead;
     public AudioClip buyInteraction;
     public AudioClip deniedInteraction;
     public AudioClip buttonClick;
     public AudioClip buttonHover;
+    public AudioClip attackedCreature;
+    public AudioClip deadCreature;
     public AudioClip mergeCreature;
     public AudioClip unlockNewCreature;
     public AudioClip pickupCreature;
     public AudioClip dropCreature;
+    public AudioClip waveSplash;
+
+    public AudioSource unlockedNewCreatureSource;
+    public AudioSource wavesplashSource;
 
     [Header("Pitch Settings")]
     [Range(0.5f, 2f)] public float minPitch = 0.90f;
@@ -88,15 +96,21 @@ public class AudioManager : MonoBehaviour
     // ============================================================
     public void PlayBubble(AudioSource source = null) => Play(source ?? GetMainSource(), bubblePop);
     public void PlayUnagiBubble(AudioSource source = null) => Play(source ?? GetMainSource(), unagiBubble);
+    public void PlayCrabPinch(AudioSource source = null) => Play(source ?? GetMainSource(), crabPinch);
+    public void PlayPuffBloat(AudioSource source = null) => Play(source ?? GetMainSource(), puffBloat);
     public void PlayEnemyDead(AudioSource source = null) => Play(source ?? GetMainSource(), enemyDead);
     public void PlayBuyInteraction(AudioSource source = null) => Play(source ?? GetMainSource(), buyInteraction);
     public void PlayDeniedInteraction(AudioSource source = null) => Play(source ?? GetMainSource(), deniedInteraction);
     public void PlayButtonClick(AudioSource source = null) => Play(source ?? GetMainSource(), buttonClick);
     public void PlayButtonHover(AudioSource source = null) => Play(source ?? GetMainSource(), buttonHover);
+
+    public void PlayAttackedCreature(AudioSource source = null) => Play(source ?? GetMainSource(), attackedCreature);
+    public void PlayDeadCreature(AudioSource source = null) => Play(source ?? GetMainSource(), deadCreature);
     public void PlayMergeCreature(AudioSource source = null) => Play(source ?? GetMainSource(), mergeCreature);
-    public void PlayUnlockNewCreature(AudioSource source = null) => Play(source ?? GetMainSource(), unlockNewCreature);
+    public void PlayUnlockNewCreature(AudioSource source = null) => Play(source ?? unlockedNewCreatureSource, unlockNewCreature);
     public void PlayPickupCreature(AudioSource source = null) => Play(source ?? GetMainSource(), pickupCreature);
     public void PlayDropCreature(AudioSource source = null) => Play(source ?? GetMainSource(), dropCreature);
+    public void PlayWaveSplash(AudioSource source = null) => Play(source ?? wavesplashSource, waveSplash);
     
 
     // ============================================================

@@ -15,7 +15,7 @@ MonoBehaviour:
   index: 1
   upgradeName: Bleeding Pinch
   type: 0
-  description: Crabbo now can cause bleeding on enemy causing them to take extra
-    damage (Bleed -> Decreased Enemy damage resistance by 15%)
+  description: 'Crabbo now can cause bleeding on enemy causing them to bleed for
+    3 secs \n(Bleed : decreased hp by 5% of attackers damage every seconds)'
   cost: 10000
   isPurchased: 0

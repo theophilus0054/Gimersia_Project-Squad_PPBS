@@ -1,6 +1,8 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Linq;
 
 public class UIManager : MonoBehaviour
 {
@@ -14,6 +16,7 @@ public class UIManager : MonoBehaviour
     public GameObject WaveEndlessPanel;
 
     [Header("Wave Condition Frame")]
+    public GameObject waveNotificationPanel;
     public GameObject waveFailedFrame;
     public GameObject waveFinishedFrame;
 
@@ -26,6 +29,41 @@ public class UIManager : MonoBehaviour
     public GameObject popupWarningPrefab;
     public GameObject popupFeatureIndex;
 
+    public Image objectBackground;   // Drag ke inspector
+    private bool isFastForward = false;
+
+
+    public void ToggleFastForward()
+    {
+        if (isFastForward)
+            TurnOffFastForward();
+        else
+            TurnOnFastForward();
+    }
+
+    public void TurnOnFastForward()
+    {
+        isFastForward = true;
+        Time.timeScale = 2f;
+        SetAlpha(objectBackground, 1f);
+    }
+
+    public void TurnOffFastForward()
+    {
+        isFastForward = false;
+        Time.timeScale = 1f;
+        SetAlpha(objectBackground, 0f);
+    }
+
+    private void SetAlpha(Image img, float alpha)
+    {
+        if (img == null) return;
+
+        Color c = img.color;
+        c.a = alpha;
+        img.color = c;
+    }
+
 
     private void Awake()
     {
@@ -37,12 +75,41 @@ public class UIManager : MonoBehaviour
         Instance = this;
     }
 
+    public static string ScaleNumber(long value)
+    {
+        if (value >= 1_000_000_000)
+            return (value / 1_000_000_000f).ToString("0.#") + "B";
+        if (value >= 1_000_000)
+            return (value / 1_000_000f).ToString("0.#") + "M";
+        if (value >= 1_000)
+            return (value / 1_000f).ToString("0.#") + "K";
+
+        return value.ToString();
+    }
+
     void Start()
     {
-        coinText.text = GameManager.Instance.totalCoins.ToString();
-        // Optional: inisialisasi stage text
-        UpdateStageText(StageManager.Instance.currentStage);
+        coinText.text = ScaleNumber(GameManager.Instance.totalCoins);
     }
+
+    void Update()
+    {
+        if (StageManager.Instance.isSummonPhase)
+        {
+            if (WaveSurrenderPanel.GetComponent<SurrenderScript>() != null)
+            {
+                WaveSurrenderPanel.GetComponent<SurrenderScript>().DeactivateButton();
+            }
+        } else
+        {
+            if (WaveStagePanel.GetComponent<SlideButton>() != null)
+            {
+                WaveStagePanel.GetComponent<SlideButton>().DeactivateButton();
+            }
+        }
+    }
+
+
 
     public void UpdateStageText(int stageNumber)
     {
@@ -56,7 +123,7 @@ public class UIManager : MonoBehaviour
         if(stageNumber >= GameManager.Instance.highestStage)
         {
             stageNext.SetActive(false);
-            if(stageNumber >= StageManager.Instance.stageSummons.Length)
+            if(stageNumber >= StageManager.Instance.stageDatabase.stages.Count())
             {
                 WaveEndlessPanel.GetComponent<EndlessScript>().ActiveButton();
                 return;
